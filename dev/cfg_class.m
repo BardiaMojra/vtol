@@ -10,11 +10,12 @@ classdef cfg_class < matlab.System
     brief       = '' % test brief 
     projDir     =  pwd 
     outDir      = [pwd '/out']   
-    datDir      = '~/data'   
+    datDir      = '~/data/vtol'   
     ttag        % test tag [TID]_[btype]_[bnum]% dset
     toutDir     % outDir+ttag
     % dataset 
-    btype       = 'dlo_shape_control'
+    btype       % usr input
+    btypes      = {"sp","dp","vtol"}
     bnum        = nan % btype subset
     st_frame    = nan % start frame index
     end_frame   = nan % end frame index
@@ -55,17 +56,16 @@ classdef cfg_class < matlab.System
         mkdir(obj.toutDir);
         disp("[config]->> directory was created!");
       end 
-      
       obj.load_dat(); % 
       obj.sav_cfg(); % sav cfg to file
     end
 
     function load_dat(obj)
-      obj.dat = dat_class(btype = obj.btype, datDir = obj.datDir); % load data
-      obj.dat.load_cfg(obj);
-      obj.st_frame = obj.dat.st_frame;
+      obj.dat       = dat_class(); obj.dat.load_cfg(obj); % load data
+      obj.st_frame  = obj.dat.st_frame;
       obj.end_frame = obj.dat.end_frame;
     end
+
     function sav_cfg(obj)
       if ~isempty(obj.brief) || obj.sav_cfg_en
         fname = strcat(obj.toutDir,"cfg.txt"); 
