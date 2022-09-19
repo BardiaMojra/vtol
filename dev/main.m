@@ -11,11 +11,18 @@ dlgr  = dlgr_class(); dlgr.load_cfg(cfg);
 %% init app modules
 kp    = koopman_class(); kp.load_cfg(cfg); % also loads dat 
 
-%% run
-gt_m    = model_class(mthd = "ground truth", rec = pi.dat); % gt
+%% gen data 
+% https://www.mathworks.com/help/simulink/ug/using-the-sim-command.html#mw_630580a7-20cd-43f3-aa36-2b5b0064daf4
+% 
 
-kp.gen_dset(kp.X, kp.Y, nSets); % 
-kp.get_Phi();
+%% run
+%gt_m    = model_class(mthd = "ground truth", rec = pi.dat); % gt
+
+
+
+kp.lift_dat(kp.X, kp.Y, nSets); % 
+kp.Phi = kp.get_Phi_model();
+
 
 
 
