@@ -40,10 +40,6 @@ classdef koopman_class < matlab.System
                       mthd = "piDMD", ...
                       label = label);
 
-
-
-
-
     end % get_model()
 
 

@@ -11,18 +11,18 @@ classdef VanDerPol_class < matlab.System
     end_frame    
     btype         
     bnum
-    %%
+    %% settings
     esp   = 1.0
     dt    = 0.01
-    %%
+    stRange = 6
+    %% opt
     f   % function 
     nStates
     nActions
     dfdx
     dfdu
-    %% dat (argin)
+    %% 
     dat % dat 
-    dt
     nVars % x and dx from raw data
     nSamps
   end
@@ -36,60 +36,53 @@ classdef VanDerPol_class < matlab.System
     function load_cfg(obj, cfg) 
       obj.toutDir     = cfg.toutDir;
       obj.dt          = cfg.dt;  
-      obj.nSamps      = cfg.nSamps;       
       
+      obj.nSamps      = cfg.nSamps;       
 
+
+      
       obj.init();
-      obj.load_dat(cfg.dat.dat);
     end
 
-    
-
-    function state = reset(obj)
-      obj.state = np.random.uniform(-3., 3., size=(self.num_states,));
-      state = obj.state;
+    function x = reset(obj) % reset st to rand IC
+      obj.x = -(obj.stRange/2) + obj.stRange*rand(obj.nx,1);
+      x = obj.x;
     end 
 
-    function sample_action(obj)
-      sampAct = np.random.uniform(-3., 3., size=(self.num_actions,));
-    
+    function u = ransamp_u(obj)
+      obj.u = -(obj.stRange/2) + obj.stRange*rand(obj.nx,1);
+      u = obj.u;
+    end 
+
     function xdot = f(obj,x,u)
-      xdot = np.array([
-                      x[1],
-                     -x[0] + self.eps * (1 - x[0]**2) * x[1] + u[0]])        
+      xdot = [x(2);
+             -x(1) + obj.eps * (1-x(1)^2) * x(2)+u(1)];
+      obj.xdot = xdot;
     end 
 
     function [dfdx,dfdu] = get_linearization(obj,x,u)
       dfdx = obj.dfdx(x,u);
       dfdu = obj.dfdu(x,u);
+      
     end 
     
-    function state = step(obj,u) % RK4 step
-      k1 = self.f(self.state, u) * self.dt
-      k2 = self.f(self.state + k1/2.0, u) * self.dt
-      k3 = self.f(self.state + k2/2.0, u) * self.dt
-      k4 = self.f(self.state + k3, u) * self.dt
-      self.state = self.state + (k1 + 2 * (k2 + k3) + k4)/6
-      state = obj.state;
+    function x = step(obj,u) % RK4 step
+      k1 = obj.f(obj.x , u) * obj.dt;
+      k2 = obj.f(obj.x + k1/2.0, u) * obj.dt;
+      k3 = obj.f(obj.x + k2/2.0, u) * obj.dt;
+      k4 = obj.f(obj.x + k3, u) * obj.dt;
+      obj.x = obj.x + (k1 + 2 * (k2 + k3) + k4)/6;
+      x = obj.x;
     end 
   end 
 
   methods  (Access = private)
     function init(obj)
-      obj.nss       = obj.nVars/2;
-      obj.nTrain    = obj.nSamps - 1; 
-      obj.x_cols    = 1:obj.nss; 
-      obj.xd_cols   = obj.nss+1:obj.nVars; 
-      obj.tspan     = obj.dt*obj.nSamps;
-      
-      %def __init__(self, eps=1.0, dt=0.01):
-        self.eps = eps
-        self.dt = dt
-        self.dfdx = jacobian(self.f, argnum=0)
-        self.dfdu = jacobian(self.f, argnum=1)
-        self.num_states = 2
-        self.num_actions = 2
-        self.reset()
+      obj.dfdx = jacobian(obj.f, 0); %%
+      obj.dfdu = jacobian(obj.f, 1); %%
+      obj.num_states = 2
+      obj.num_actions = 2
+      obj.reset()
     end
     
     function load_dat(obj, dat)

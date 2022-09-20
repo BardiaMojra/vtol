@@ -1,16 +1,17 @@
-%% vtol main
+%% koopman main
 %% init sys 
 %warning('off','all')
 close all; clear; clc;
 cfg  = cfg_class(TID    = ['T000','000','_koop_',''], ...
                  brief  = ["."], ...
-                 btype  = "vtol", ...
+                 btype  = "VDPol", ...
                  bnum   = 1, ...
                  end_frame  = 200);
 dlgr  = dlgr_class(); dlgr.load_cfg(cfg);
+%% gen dat 
+vp    = VanDerPol_class(); vp.load_cfg(cfg) %
 %% init app modules
 kp    = koopman_class(); kp.load_cfg(cfg); % also loads dat 
-
 %% gen data 
 % https://www.mathworks.com/help/simulink/ug/using-the-sim-command.html#mw_630580a7-20cd-43f3-aa36-2b5b0064daf4
 % 
@@ -18,9 +19,10 @@ kp    = koopman_class(); kp.load_cfg(cfg); % also loads dat
 %% run
 %gt_m    = model_class(mthd = "ground truth", rec = pi.dat); % gt
 
+kp.set_basis(nxObs=4, nuObs=1, bssFun="VDPol");
+kp.get_model(vp, nTrials=10, nSamps=200);
 
 
-kp.lift_dat(kp.X, kp.Y, nSets); % 
 kp.Phi = kp.get_Phi_model();
 
 
