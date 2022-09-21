@@ -48,9 +48,14 @@ classdef dat_class < matlab.System
           num2str(obj.bnum,'%04.f'), '.xlsx');
         %obj.freq  = 10; % 10Hz given
         %obj.dt  = 1/obj.freq;
+      elseif strcmp(obj.btype, 'VanDerPol') % --------->>> dp data
+        obj.datDir = [];
+        %obj.freq  = 10; % 10Hz given
+        %obj.dt  = 1/obj.freq;
       else
         error('undefined dataset...');
       end    
+      
       obj.load_dat(); 
       obj.select_dat();
     end

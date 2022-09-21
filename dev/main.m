@@ -4,8 +4,9 @@
 close all; clear; clc;
 cfg  = cfg_class(TID    = ['T000','000','_koop_',''], ...
                  brief  = ["."], ...
-                 btype  = "VDPol", ...
+                 btype  = "VanDerPol", ...
                  bnum   = 1, ...
+                 nTrials=10, nSamps=200, ...
                  end_frame  = 200);
 dlgr  = dlgr_class(); dlgr.load_cfg(cfg);
 %% gen dat 
@@ -19,9 +20,10 @@ kp    = koopman_class(); kp.load_cfg(cfg); % also loads dat
 %% run
 %gt_m    = model_class(mthd = "ground truth", rec = pi.dat); % gt
 
-kp.set_basis(nxObs=4, nuObs=1, bssFun="VDPol");
-kp.get_model(vp, nTrials=10, nSamps=200);
 
+vp_m = kp.get_model(vp);
+vp_m = kp.get_optCont(vp_m);
+trj  = kp.run_cont(vp_m,vp);
 
 kp.Phi = kp.get_Phi_model();
 

@@ -13,8 +13,10 @@ classdef koopman_class < matlab.System
     nSamps
     st_frame
     end_frame
-    %% dat n state 
- 
+    %% koopman
+    nxObs % num of x observables  
+    nuObs % num of u observables 
+    nObs % num of x+u observables 
   end
   methods % constructor
     function obj = koopman_class(varargin) 
@@ -25,60 +27,83 @@ classdef koopman_class < matlab.System
     
     function load_cfg(obj, cfg) 
       obj.toutDir     = cfg.toutDir;
-      obj.dt          = cfg.dat.dt;  
-      obj.nVars       = cfg.dat.nVars;  
-      obj.nSamps      = cfg.dat.nSamps;       
-      obj.st_frame    = cfg.dat.st_frame;   
-      obj.end_frame   = cfg.dat.end_frame; 
-
+      obj.dt          = cfg.sim.dt;  
+      %obj.nVars       = cfg.sim.nVars;  
+      %obj.nSamps      = cfg.sim.nSamps;       
+      %obj.st_frame    = cfg.sim.st_frame;   
+      %obj.end_frame   = cfg.sim.end_frame; 
+      obj.nTrials     = cfg.sim.nTrials;
+      obj.nSamps      = cfg.sim.nSamps;
+      obj.sim         = cfg.sim;
       obj.init();
-      obj.load_dat(cfg.dat.dat);
+      obj.get_model(cfg.sim);
     end
 
-    function m = get_model(obj, X, Y, cons, label, varargin)
-      m = model_class(cons = cons, ...
-                      mthd = "piDMD", ...
-                      label = label);
-
+    function m = get_model(obj, sim)
+      m = model_class(cons = "none", ...
+                      mthd = "koopman", ...
+                      label = "test");
+      M = obj.nTrials * obj.nSamps;      
+      A = zeros(obj.nObs);
+      G = zeros(obj.nObs);
+      
+      for k = 1:nTrials % gen dat
+        x = sim.reset();
+        u = sim.ransamp_u();
+        for t = 1:obj.nSamps
+          xo = sim.step(u);
+          uo = u;
+          A = A + obj.OuterProduct(obj.z(xo,uo), obj.z(xo,uo));
+          G = G + obj.OuterProduct(obj.z(x ,u ), obj.z(x ,u ));
+          x = xo; u = uo; % propagate x n u
+        end
+      end
+      m.datA  = A / M;
+      m.datG  = G / M;
+      m.ko    = dot(A,pinv(G));
+      m.cko   = logm(m.kp_opt)/sim.dt;
+      m.A     = ckp_opt(1:obj.nxObs,1:obj.nxObs);
+      m.B     = ckp_opt(1:obj.nxObs,obj.nxObs:end);
     end % get_model()
 
+    function C = OuterProduct(A, B)  % version 5
+      C = reshape(A(:) * B(:).', [size(A), size(B)]);
+    end
 
-
-    function get_rec(obj, m)
-      m.rec = zeros(obj.nVars, obj.nSamps); % reconstruct dat
-      m.rec(:,1) = obj.dat(:,1);       
-      for j = 2:obj.nSamps
-        m.rec(:,j) = m.A(m.rec(:,j-1));
-      end
-    end % get_rec()
+    function get_optCont(~, m)
+      m.Q     = diag([1.0, 1.0, 0., 0.]);
+      m.R     = diag([1.0]) * 1e-2;
+      m.P     = care(m.A, m.B, m.Q, m.R);
+      m.Klqr  = m.R\(m.B'*m.P);
+    end % get_KO_optCont()
   
+    function trajectory = run_cont(obj,m,sim)
+      x = sim.reset();
+      u = sim.ransamp_u();
+      ztar = obj.get_z(0.*x, u);
+      ztar = ztar(1:obj.nxObs);
+      nt = 500;%  simulation time
+      trajectory = zeros(nt, sim.nx);
+      for t = 1:nt
+        zest = obj.get_z(x,u);
+        zest = zest(1:obj.nxObs);
+        u = - m.Klqr * (zest-ztar);
+        x = sim.step(u);
+        trajectory(t,:) = x;
+      end
+    end
+      
+    function z = get_z(~,x,u) % this is the basis function 
+      z = [x(1), x(2), x(1)^2, (x(1)^2)*x(2), u(1)];
+    end % get_lifted_rep()
   end 
   methods  (Access = private)
     function init(obj)
-      obj.nss       = obj.nVars/2;
-      obj.nTrain    = obj.nSamps - 1; 
-      obj.x_cols    = 1:obj.nss; 
-      obj.xd_cols   = obj.nss+1:obj.nVars; 
-      obj.tspan     = obj.dt*obj.nSamps;
     end
     
-    function load_dat(obj, dat)
-      assert(isequal(mod(size(dat,2),2),0), ...
-        "-->>> odd num of state vars: %d", size(dat,2));
-      obj.x       = dat(:,obj.x_cols); % state vars 
-      obj.xd      = dat(:,obj.xd_cols); % state vars time derivative (vel)
-      obj.dat     = [obj.x'; obj.xd']; % reorganize data in state space (ss) formulation 
-      obj.ndat    = obj.dat + 1e-1*std(obj.dat,[],2); % norm dat
-      obj.X       = obj.dat(:,1:obj.nTrain);
-      obj.Y       = obj.dat(:,2:obj.nTrain+1);
-    end
+    %function load_dat(obj, dat)
+    %end
 
-    function trajPlot(~,j) % Nice plot of trajectories
-      yticks([-pi/4,0,pi/4]); yticklabels([{"$-\pi/4$"},{"0"},{"$\pi/4$"}])
-      set(gca,"TickLabelInterpreter","Latex","FontSize",20);grid on
-      ylim([-1,1])
-      ylabel(j,"Interpreter","latex","FontSize",20)
-    end
 
    
 

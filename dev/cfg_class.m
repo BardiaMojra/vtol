@@ -19,8 +19,11 @@ classdef cfg_class < matlab.System
     bnum        = nan % btype subset
     st_frame    = nan % start frame index
     end_frame   = nan % end frame index
-    %% private
-    dat  
+    nTrials     = nan % start frame index
+    nSamps      = nan % end frame index
+    %% 
+    dat % dataset
+    sim % sim model - generates dat
   end
   methods  % constructor
     function obj = cfg_class(varargin)
