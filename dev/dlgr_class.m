@@ -83,12 +83,12 @@ classdef dlgr_class < matlab.System
       obj.logs{1,11}    = obj.lcols{11}; %"L2" 
       obj.logs{1,12}    = obj.lcols{12}; %"MAE" 
       obj.logs{1,13}    = obj.lcols{13}; %"MSE"
-      obj.freq          = obj.dat.freq;
-      obj.dt            = obj.dat.dt;
-      obj.tspan         = obj.dat.tspan;
-      obj.nSamps        = obj.dat.nSamps; 
-      obj.nVars         = obj.dat.nVars;
-      obj.varNames      = obj.dat.varNames;
+      %obj.freq          = obj.dat.freq;
+      %obj.dt            = obj.dat.dt;
+      %obj.tspan         = obj.dat.tspan;
+      %obj.nSamps        = obj.dat.nSamps; 
+      %obj.nVars         = obj.dat.nVars;
+      %obj.varNames      = obj.dat.varNames;
     end
         
     function load_cfg(obj, cfg)
@@ -96,8 +96,8 @@ classdef dlgr_class < matlab.System
       obj.ttag              = cfg.ttag; 
       obj.toutDir           = cfg.toutDir; 
       obj.btype             = cfg.btype; 
-      obj.bnum              = cfg.bnum;   
-      obj.dat               = cfg.dat;
+      %obj.bnum              = cfg.bnum;   
+      %obj.dat               = cfg.dat;
       obj.init();
     end
 

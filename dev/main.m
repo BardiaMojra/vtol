@@ -1,5 +1,9 @@
 %% koopman main
+% todo: 
+% - impliment DP
+% - port in DIP LQR controller and compare results
 %% init sys 
+
 %warning('off','all')
 close all; clear; clc;
 cfg  = cfg_class(TID    = ['T000','000','_koop_',''], ...
@@ -20,18 +24,17 @@ kp    = koopman_class(); kp.load_cfg(cfg); % also loads dat
 %% run
 %gt_m    = model_class(mthd = "ground truth", rec = pi.dat); % gt
 
-
-vp_m = kp.get_model(vp);
-vp_m = kp.get_optCont(vp_m);
+vp_m = kp.get_model(vp); kp.get_optCont(vp_m);
 trj  = kp.run_cont(vp_m,vp);
-
-kp.Phi = kp.get_Phi_model();
+plot(trj);
+legend("on")
+%kp.Phi = kp.get_Phi_model();
 
 
 
 
 %% results
-dlgr.add_mdl(gt_m);
+%dlgr.add_mdl(gt_m);
 dlgr.add_mdl(kp_m); % 
 
 %% post processing 

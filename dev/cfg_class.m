@@ -35,34 +35,22 @@ classdef cfg_class < matlab.System
   methods (Access = private)
   
     function init(obj)
-      assert(~isempty(obj.btype), '[config]->> cfg.btype is empty: %s', ...
-        obj.btype)
-      if isnan(obj.bnum) % get test tag and toutDir
-        obj.ttag  = strcat(obj.TID,'_',obj.btype);
-      else
-        obj.ttag  = strcat(obj.TID );% ...
-                           %,'_', obj.btype,'_', num2str(obj.bnum,'%02.f'));
-      end      
-      obj.ttag = strrep(obj.ttag,' ','_');
-      %obj.ttag = strrep(obj.ttag,'-','_');
-      obj.toutDir = strcat(obj.outDir,'/',obj.ttag,'/');
-
-      if not(isfolder(obj.toutDir)) % create toutDir
-        disp("[config]->> test_toutDir does NOT exist: ");
-        disp(obj.toutDir);
-        mkdir(obj.toutDir);
-        disp("[config]->> directory was created!");
-      else 
-        disp("[config]->> test_toutDir exists and will be removed: ");
-        disp(obj.toutDir);
-        rmdir(obj.toutDir, 's');
-        mkdir(obj.toutDir);
-        disp("[config]->> directory was created!");
-      end 
-      obj.load_dat(); % 
+      assert(~isempty(obj.btype),'[cfg]->> cfg.btype is empty: %s',obj.btype)
+      obj.set_ttag();
+      obj.set_toutDir();
+      %obj.load_dat(); % 
+      obj.load_sim(); % 
       obj.sav_cfg(); % sav cfg to file
     end
 
+    function load_sim(obj)
+      if strcmp(obj.btype, 'VanDerPol') % --------->>> 
+        obj.sim       = VanDerPol_class(); obj.sim.load_cfg(obj); % load sim
+      else
+        error('[cfg]->> simulation dataset...');
+      end    
+    end
+    
     function load_dat(obj)
       obj.dat       = dat_class(); obj.dat.load_cfg(obj); % load data
       obj.st_frame  = obj.dat.st_frame;
@@ -86,6 +74,32 @@ classdef cfg_class < matlab.System
         fprintf(file, strcat("end_frame:", num2str(obj.end_frame),"\n"));
         fclose(file);
       end
-    end
+    end % sav_cfg()
+
+    function set_ttag(obj)
+      if isnan(obj.bnum) % get test tag and toutDir
+        obj.ttag  = strcat(obj.TID,'_',obj.btype);
+      else 
+        obj.ttag  = strcat(obj.TID );% ,'_', obj.btype,'_', num2str(obj.bnum,'%02.f'));
+      end      
+      obj.ttag = strrep(obj.ttag,' ','_');
+      %obj.ttag = strrep(obj.ttag,'-','_');
+      obj.toutDir = strcat(obj.outDir,'/',obj.ttag,'/');
+    end % set_ttag()
+    
+    function set_toutDir(obj)
+      if not(isfolder(obj.toutDir)) % create toutDir
+        disp("[config]->> test_toutDir does NOT exist: ");
+        disp(obj.toutDir);
+        mkdir(obj.toutDir);
+        disp("[config]->> directory was created!");
+      else 
+        disp("[config]->> test_toutDir exists and will be removed: ");
+        disp(obj.toutDir);
+        rmdir(obj.toutDir, 's');
+        mkdir(obj.toutDir);
+        disp("[config]->> directory was created!");
+      end 
+    end % set_toutDir()
   end % methods (Access = private)
 end

@@ -6,6 +6,8 @@ classdef VanDerPol_class < matlab.System
     credit      = ""
     %% cfg (argin)
     toutDir         
+    nTrials    % = cfg.sim.nTrials;
+    nSamps    %  = cfg.sim.nSamps;    
     %datDir            
     %st_frame      
     %end_frame    
@@ -14,10 +16,14 @@ classdef VanDerPol_class < matlab.System
     %% settings
     nx      = 2 % num of state variables 
     nu      = 2 % num of cont. inputs
-    esp     = 1.0
+    eps     = 1.0
     dt      = 0.01
     stRange = 6
+    uRange = 0.1
     %% opt
+    x
+    u
+    xdot
     %f   % function 
     %dfdx not vars, fpntr
     %dfdu not vars, fpntr
@@ -25,8 +31,6 @@ classdef VanDerPol_class < matlab.System
     %dat % dat 
     %nVars % same as nx
     %nSamps
-    nTrials    % = cfg.sim.nTrials;
-    nSamps    %  = cfg.sim.nSamps;
   end
   methods 
     function obj = VanDerPol_class(varargin) 
@@ -44,13 +48,13 @@ classdef VanDerPol_class < matlab.System
       obj.init();
     end
 
-    function x = reset(obj) % reset st to rand IC
+    function x = ransamp_x(obj) % reset st to rand IC
       obj.x = -(obj.stRange/2) + obj.stRange*rand(obj.nx,1);
       x = obj.x;
     end 
 
     function u = ransamp_u(obj) % rand cont. input 
-      obj.u = -(obj.stRange/2) + obj.stRange*rand(obj.nx,1);
+      obj.u = -(obj.uRange/2) + obj.uRange*rand(obj.nx,1);
       u = obj.u;
     end 
 
@@ -73,7 +77,7 @@ classdef VanDerPol_class < matlab.System
       jac = jacobian(obj.f(x,u),u);
     end 
 
-    function x = step(obj,u) % RK4 step
+    function x = stepX(obj,u) % RK4 step-------------- ?
       k1 = obj.f(obj.x , u) * obj.dt;
       k2 = obj.f(obj.x + k1/2.0, u) * obj.dt;
       k3 = obj.f(obj.x + k2/2.0, u) * obj.dt;
@@ -89,7 +93,7 @@ classdef VanDerPol_class < matlab.System
       %obj.dfdu = jacobian(obj.f, 1); %%
       %obj.nx = 2;
       %obj.nu = 2;
-      obj.reset()
+      obj.ransamp_x();
     end
     
   end % private methods

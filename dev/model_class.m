@@ -30,6 +30,17 @@ classdef model_class < matlab.System
     d % band width of diag 
     s % block size [2 3]
     p % num elements in the block 
+    % koopman vars
+    datA
+    datG
+    ko  
+    cko 
+    Q     
+    R     
+    P     
+    Klqr  
+    %A   
+    B   
     % piDMD vars
     U
     S
@@ -41,8 +52,8 @@ classdef model_class < matlab.System
     Xproj 
     Uyx
     Vyx
-    R % uTri
-    Q % lTri
+    %R % uTri
+    %Q % lTri
     Ut
     M
     N
