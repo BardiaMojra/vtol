@@ -1,6 +1,8 @@
 %% koopman main
 % todo: 
 % - impliment DP
+% - in code simScape
+% https://www.mathworks.com/help/simulink/ug/run-multiple-simulations.html 
 % - port in DIP LQR controller and compare results
 %% init sys 
 

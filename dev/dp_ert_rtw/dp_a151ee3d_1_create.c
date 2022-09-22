@@ -796,8 +796,8 @@ static
         +0.000000000000000000e+00, +0.000000000000000000e+00 }, { +
         0.000000000000000000e+00 } },
 
-    { 0, 6, 0, false, 0, 0, "1", true, true, +1.000000000000000000e+00, false, 1,
-      { +0.000000000000000000e+00, +0.000000000000000000e+00,
+    { 0, 6, 0, false, 0, 2, "deg/s", true, true, +1.000000000000000000e+00,
+      false, 1, { +0.000000000000000000e+00, +0.000000000000000000e+00,
         +0.000000000000000000e+00, +0.000000000000000000e+00 }, { +
         0.000000000000000000e+00 } },
 
@@ -806,8 +806,8 @@ static
         +0.000000000000000000e+00, +0.000000000000000000e+00 }, { +
         0.000000000000000000e+00 } },
 
-    { 0, 7, 0, false, 0, 0, "1", true, true, +1.000000000000000000e+00, false, 1,
-      { +0.000000000000000000e+00, +0.000000000000000000e+00,
+    { 0, 7, 0, false, 0, 2, "deg/s", true, true, +1.000000000000000000e+00,
+      false, 1, { +0.000000000000000000e+00, +0.000000000000000000e+00,
         +0.000000000000000000e+00, +0.000000000000000000e+00 }, { +
         0.000000000000000000e+00 } }
   };
@@ -837,7 +837,7 @@ static void initAsserts(NeDaePrivateData *smData)
 {
   PmAllocator *alloc = pm_default_allocator();
   int_T status = 0;
-  smData->mNumParamAsserts = 0;
+  smData->mNumParamAsserts = 8;
   smData->mParamAssertObjects = NULL;
   smData->mParamAssertPaths = NULL;
   smData->mParamAssertDescriptors = NULL;
@@ -850,15 +850,15 @@ static void initAsserts(NeDaePrivateData *smData)
     const NeAssertData *ad = dp_a151ee3d_1_assertData;
     size_t i;
     PM_ALLOCATE_ARRAY(smData->mParamAssertObjects,
-                      PmCharVector, 0, alloc);
+                      PmCharVector, 8, alloc);
     PM_ALLOCATE_ARRAY(smData->mParamAssertPaths,
-                      PmCharVector, 0, alloc);
+                      PmCharVector, 8, alloc);
     PM_ALLOCATE_ARRAY(smData->mParamAssertDescriptors,
-                      PmCharVector, 0, alloc);
+                      PmCharVector, 8, alloc);
     PM_ALLOCATE_ARRAY(smData->mParamAssertMessages,
-                      PmCharVector, 0, alloc);
+                      PmCharVector, 8, alloc);
     PM_ALLOCATE_ARRAY(smData->mParamAssertMessageIds,
-                      PmCharVector, 0, alloc);
+                      PmCharVector, 8, alloc);
     for (i = 0; i < smData->mNumParamAsserts; ++i, ++ad) {
       smData->mParamAssertObjects [i] = cStringToCharVector(ad->mObject );
       smData->mParamAssertPaths [i] = cStringToCharVector(ad->mPath );
@@ -959,10 +959,22 @@ static
   PmAllocator *alloc = pm_default_allocator();
   int_T status = 0;
   size_t i = 0;
-  const int32_T *rtpRootVarRows = NULL;
-  const int32_T *rtpRootVarCols = NULL;
-  const char **rtpFullPaths = NULL;
-  smData->mNumRtpRootVars = 0;
+  const int32_T rtpRootVarRows[4] = {
+    1, 1, 1, 1
+  };
+
+  const int32_T rtpRootVarCols[4] = {
+    1, 1, 1, 1
+  };
+
+  const char *rtpFullPaths [4] = {
+    "RTP_00F46B65_PositionTargetValue",
+    "RTP_00F46B65_VelocityTargetValue",
+    "RTP_9CB22C5A_PositionTargetValue",
+    "RTP_9CB22C5A_VelocityTargetValue"
+  };
+
+  smData->mNumRtpRootVars = 4;
   status = pm_create_int_vector_fields(
     &smData->mRtpRootVarRows, smData->mNumRtpRootVars, alloc);
   checkMemAllocStatus(status);
@@ -976,22 +988,22 @@ static
   smData->mRtpFullPaths = NULL;
   if (smData->mNumRtpRootVars > 0) {
     size_t v;
-    PM_ALLOCATE_ARRAY(smData->mRtpFullPaths, PmCharVector, 0, alloc);
+    PM_ALLOCATE_ARRAY(smData->mRtpFullPaths, PmCharVector, 4, alloc);
     for (v = 0; v < smData->mNumRtpRootVars; ++v) {
       smData->mRtpFullPaths[v] = cStringToCharVector(rtpFullPaths[v]);
     }
   }
 
-  smData->mNumRuntimeRootVarScalars = 0;
+  smData->mNumRuntimeRootVarScalars = 4;
   status = pm_create_real_vector_fields(
-    &smData->mRuntimeParameterScalars, 0,
+    &smData->mRuntimeParameterScalars, 4,
     alloc);
   checkMemAllocStatus(status);
   for (i = 0; i < smData->mRuntimeParameterScalars.mN; ++i)
     smData->mRuntimeParameterScalars.mX[i] = 0.0;
   sm_core_RuntimeDerivedValuesBundle_create(
     &smData->mAsmRuntimeDerivedValuesBundle,
-    0,
+    8,
     0);
   sm_core_RuntimeDerivedValuesBundle_create(
     &smData->mSimRuntimeDerivedValuesBundle,

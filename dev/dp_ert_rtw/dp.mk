@@ -2,7 +2,7 @@
 ## Makefile generated for component 'dp'. 
 ## 
 ## Makefile     : dp.mk
-## Generated on : Mon Sep 19 15:08:57 2022
+## Generated on : Wed Sep 21 21:20:59 2022
 ## Final product: $(RELATIVE_PATH_TO_ANCHOR)/dp
 ## Product type : executable
 ## 
@@ -25,7 +25,7 @@ START_DIR                 = /home/smerx/git/vtol/dev
 SOLVER                    = 
 SOLVER_OBJ                = 
 CLASSIC_INTERFACE         = 0
-TGT_FCN_LIB               = None
+TGT_FCN_LIB               = ISO_C
 MODEL_HAS_DYNAMICALLY_LOADED_SFCNS = 0
 RELATIVE_PATH_TO_ANCHOR   = ..
 C_STANDARD_OPTS           = -fwrapv
@@ -165,7 +165,7 @@ INCLUDES = $(INCLUDES_BUILDINFO)
 ## DEFINES
 ###########################################################################
 
-DEFINES_BUILD_ARGS = -DCLASSIC_INTERFACE=0 -DALLOCATIONFCN=0 -DTERMFCN=0 -DONESTEPFCN=1 -DMAT_FILE=0 -DMULTI_INSTANCE_CODE=0 -DINTEGER_CODE=0 -DMT=0
+DEFINES_BUILD_ARGS = -DCLASSIC_INTERFACE=0 -DALLOCATIONFCN=0 -DTERMFCN=0 -DONESTEPFCN=1 -DMAT_FILE=0 -DMULTI_INSTANCE_CODE=1 -DINTEGER_CODE=0 -DMT=0
 DEFINES_CUSTOM = 
 DEFINES_OPTS = -DTID01EQ=1
 DEFINES_STANDARD = -DMODEL=dp -DNUMST=2 -DNCSTATES=4 -DHAVESTDIO -DMODEL_HAS_DYNAMICALLY_LOADED_SFCNS=0
@@ -176,7 +176,7 @@ DEFINES = $(DEFINES_BUILD_ARGS) $(DEFINES_CUSTOM) $(DEFINES_OPTS) $(DEFINES_STAN
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_create.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_setParameters.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_asserts.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_deriv.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_checkDynamics.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_compOutputs.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_asm_delegate.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_sim_delegate.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_mode_zero_crossings.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_logging.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_geometries.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_gateway.c $(START_DIR)/dp_ert_rtw/rt_backsubrr_dbl.c $(START_DIR)/dp_ert_rtw/rt_forwardsubrr_dbl.c $(START_DIR)/dp_ert_rtw/rt_lu_real.c $(START_DIR)/dp_ert_rtw/rt_matrixlib_dbl.c $(START_DIR)/dp_ert_rtw/dp.c
+SRCS = $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_create.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_setParameters.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_asserts.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_deriv.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_checkDynamics.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_compOutputs.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_asm_delegate.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_sim_delegate.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_mode_zero_crossings.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_logging.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_geometries.c $(START_DIR)/dp_ert_rtw/dp_a151ee3d_1_gateway.c $(START_DIR)/dp_ert_rtw/rt_backsubrr_dbl.c $(START_DIR)/dp_ert_rtw/rt_forwardsubrr_dbl.c $(START_DIR)/dp_ert_rtw/rt_lu_real.c $(START_DIR)/dp_ert_rtw/rt_matrixlib_dbl.c $(START_DIR)/dp_ert_rtw/dp.c $(START_DIR)/dp_ert_rtw/dp_capi.c
 
 MAIN_SRC = $(START_DIR)/dp_ert_rtw/ert_main.c
 
@@ -186,7 +186,7 @@ ALL_SRCS = $(SRCS) $(MAIN_SRC)
 ## OBJECTS
 ###########################################################################
 
-OBJS = dp_a151ee3d_1.o dp_a151ee3d_1_create.o dp_a151ee3d_1_setParameters.o dp_a151ee3d_1_asserts.o dp_a151ee3d_1_deriv.o dp_a151ee3d_1_checkDynamics.o dp_a151ee3d_1_compOutputs.o dp_a151ee3d_1_asm_delegate.o dp_a151ee3d_1_sim_delegate.o dp_a151ee3d_1_mode_zero_crossings.o dp_a151ee3d_1_logging.o dp_a151ee3d_1_geometries.o dp_a151ee3d_1_gateway.o rt_backsubrr_dbl.o rt_forwardsubrr_dbl.o rt_lu_real.o rt_matrixlib_dbl.o dp.o
+OBJS = dp_a151ee3d_1.o dp_a151ee3d_1_create.o dp_a151ee3d_1_setParameters.o dp_a151ee3d_1_asserts.o dp_a151ee3d_1_deriv.o dp_a151ee3d_1_checkDynamics.o dp_a151ee3d_1_compOutputs.o dp_a151ee3d_1_asm_delegate.o dp_a151ee3d_1_sim_delegate.o dp_a151ee3d_1_mode_zero_crossings.o dp_a151ee3d_1_logging.o dp_a151ee3d_1_geometries.o dp_a151ee3d_1_gateway.o rt_backsubrr_dbl.o rt_forwardsubrr_dbl.o rt_lu_real.o rt_matrixlib_dbl.o dp.o dp_capi.o
 
 MAIN_OBJ = ert_main.o
 
@@ -469,6 +469,10 @@ rt_matrixlib_dbl.o : $(START_DIR)/dp_ert_rtw/rt_matrixlib_dbl.c
 
 
 dp.o : $(START_DIR)/dp_ert_rtw/dp.c
+	$(CC) $(CFLAGS) -o "$@" "$<"
+
+
+dp_capi.o : $(START_DIR)/dp_ert_rtw/dp_capi.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 

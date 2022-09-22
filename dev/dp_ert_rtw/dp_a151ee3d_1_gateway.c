@@ -15,7 +15,7 @@
 void dp_a151ee3d_1_gateway(void)
 {
   NeModelParameters modelparams = { (NeSolverType) 0, 0.001, 0.001, 0.001, 0, 0,
-    (NeModifyAbsTol) 0, 0.01, 0, 0, 0, 0, (SscLoggingSetting) 1, 585518924, 1, };
+    (NeModifyAbsTol) 0, 0.01, 0, 1, 0, 0, (SscLoggingSetting) 1, 585714389, 1, };
 
   NeSolverParameters solverparams = { 0, (NeMBLocalSolverChoice) 0, 0.001, 0, 0,
     1, 0, 0, 0.001, 1e-06, 1e-09, 0, 0, 100, 0, 1, (NeConsistencySolver) 0,
@@ -27,7 +27,8 @@ void dp_a151ee3d_1_gateway(void)
   const NeOutputParameters* outputparameters = NULL;
   NeDae* dae;
   size_t numOutputs = 0;
-  int* rtpDaes = NULL;
+  int rtpDaes[1] = { 0 };
+
   int rtwLogDaes[1] = { 0 };
 
   {
@@ -47,7 +48,7 @@ void dp_a151ee3d_1_gateway(void)
     &modelparams,
     numOutputs,
     outputparameters,
-    0,
+    1,
     rtpDaes,
     1,
     rtwLogDaes);

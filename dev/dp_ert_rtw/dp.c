@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'dp'.
  *
- * Model version                  : 2.0
+ * Model version                  : 2.1
  * Simulink Coder version         : 9.8 (R2022b) 13-May-2022
- * C/C++ source code generated on : Mon Sep 19 15:08:47 2022
+ * C/C++ source code generated on : Wed Sep 21 21:26:42 2022
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: Intel->x86-64 (Linux 64)
@@ -22,6 +22,8 @@
 #include "dp.h"
 #include "rtwtypes.h"
 #include <stddef.h>
+#include "dp_capi.h"
+#include <string.h>
 
 /* Private macros used by the generated code to access rtModel */
 #ifndef rtmIsMajorTimeStep
@@ -36,41 +38,32 @@
 #define rtmSetTPtr(rtm, val)           ((rtm)->Timing.t = (val))
 #endif
 
-/* Continuous states */
-X rtX;
-
-/* Block signals and states (default storage) */
-DW rtDW;
-
-/* Real-time model */
-static RT_MODEL rtM_;
-RT_MODEL *const rtM = &rtM_;
-
 /* private model entry point functions */
-extern void dp_derivatives(void);
+extern void dp_derivatives(RT_MODEL *const rtM);
 
 /* Projection for root system: '<Root>' */
-void dp_projection(void)
+void dp_projection(RT_MODEL *const rtM)
 {
+  DW *rtDW = rtM->dwork;
+  X *rtX = rtM->contStates;
   NeslSimulationData *simulationData;
   NeuDiagnosticManager *diagnosticManager;
   NeuDiagnosticTree *diagnosticTree;
-  char *msg;
   real_T time;
   int_T tmp_0;
   boolean_T tmp;
 
   /* Projection for SimscapeExecutionBlock: '<S14>/STATE_1' */
-  simulationData = (NeslSimulationData *)rtDW.STATE_1_SimData;
+  simulationData = (NeslSimulationData *)rtDW->STATE_1_SimData;
   time = rtM->Timing.t[0];
   simulationData->mData->mTime.mN = 1;
   simulationData->mData->mTime.mX = &time;
   simulationData->mData->mContStates.mN = 4;
-  simulationData->mData->mContStates.mX = &rtX.dpJ1Rzq[0];
+  simulationData->mData->mContStates.mX = &rtX->dpJ1Rzq[0];
   simulationData->mData->mDiscStates.mN = 0;
-  simulationData->mData->mDiscStates.mX = &rtDW.STATE_1_Discrete;
+  simulationData->mData->mDiscStates.mX = &rtDW->STATE_1_Discrete;
   simulationData->mData->mModeVector.mN = 0;
-  simulationData->mData->mModeVector.mX = &rtDW.STATE_1_Modes;
+  simulationData->mData->mModeVector.mX = &rtDW->STATE_1_Modes;
   tmp = false;
   simulationData->mData->mFoundZcEvents = tmp;
   simulationData->mData->mIsMajorTimeStep = rtmIsMajorTimeStep(rtM);
@@ -87,13 +80,14 @@ void dp_projection(void)
   simulationData->mData->mInputValues.mN = 0;
   simulationData->mData->mInputOffsets.mN = 1;
   simulationData->mData->mInputOffsets.mX = &tmp_0;
-  diagnosticManager = (NeuDiagnosticManager *)rtDW.STATE_1_DiagMgr;
+  diagnosticManager = (NeuDiagnosticManager *)rtDW->STATE_1_DiagMgr;
   diagnosticTree = neu_diagnostic_manager_get_initial_tree(diagnosticManager);
-  tmp_0 = ne_simulator_method((NeslSimulator *)rtDW.STATE_1_Simulator,
+  tmp_0 = ne_simulator_method((NeslSimulator *)rtDW->STATE_1_Simulator,
     NESL_SIM_PROJECTION, simulationData, diagnosticManager);
   if (tmp_0 != 0) {
     tmp = error_buffer_is_empty(rtmGetErrorStatus(rtM));
     if (tmp) {
+      char *msg;
       msg = rtw_diagnostics_msg(diagnosticTree);
       rtmSetErrorStatus(rtM, msg);
     }
@@ -106,7 +100,8 @@ void dp_projection(void)
  * This function updates continuous states using the ODE3 fixed-step
  * solver algorithm
  */
-static void rt_ertODEUpdateContinuousStates(RTWSolverInfo *si )
+static void rt_ertODEUpdateContinuousStates(RTWSolverInfo *si , RT_MODEL *const
+  rtM)
 {
   /* Solver Matrices */
   static const real_T rt_ODE3_A[3] = {
@@ -142,7 +137,7 @@ static void rt_ertODEUpdateContinuousStates(RTWSolverInfo *si )
   /* Assumes that rtsiSetT and ModelOutputs are up-to-date */
   /* f0 = f(t,y) */
   rtsiSetdX(si, f0);
-  dp_derivatives();
+  dp_derivatives(rtM);
 
   /* f(:,2) = feval(odefile, t + hA(1), y + f*hB(:,1), args(:)(*)); */
   hB[0] = h * rt_ODE3_B[0][0];
@@ -152,8 +147,8 @@ static void rt_ertODEUpdateContinuousStates(RTWSolverInfo *si )
 
   rtsiSetT(si, t + h*rt_ODE3_A[0]);
   rtsiSetdX(si, f1);
-  dp_step();
-  dp_derivatives();
+  dp_step(rtM);
+  dp_derivatives(rtM);
 
   /* f(:,3) = feval(odefile, t + hA(2), y + f*hB(:,2), args(:)(*)); */
   for (i = 0; i <= 1; i++) {
@@ -166,8 +161,8 @@ static void rt_ertODEUpdateContinuousStates(RTWSolverInfo *si )
 
   rtsiSetT(si, t + h*rt_ODE3_A[1]);
   rtsiSetdX(si, f2);
-  dp_step();
-  dp_derivatives();
+  dp_step(rtM);
+  dp_derivatives(rtM);
 
   /* tnew = t + hA(3);
      ynew = y + f*hB(:,3); */
@@ -180,14 +175,16 @@ static void rt_ertODEUpdateContinuousStates(RTWSolverInfo *si )
   }
 
   rtsiSetT(si, tnew);
-  dp_step();
-  dp_projection();
+  dp_step(rtM);
+  dp_projection(rtM);
   rtsiSetSimTimeStep(si,MAJOR_TIME_STEP);
 }
 
 /* Model step function */
-void dp_step(void)
+void dp_step(RT_MODEL *const rtM)
 {
+  DW *rtDW = rtM->dwork;
+  X *rtX = rtM->contStates;
   if (rtmIsMajorTimeStep(rtM)) {
     /* set solver stop time */
     rtsiSetSolverStopTime(&rtM->solverInfo,((rtM->Timing.clockTick0+1)*
@@ -200,45 +197,86 @@ void dp_step(void)
   }
 
   {
+    NeParameterBundle expl_temp;
     NeslSimulationData *simulationData;
-    NeuDiagnosticManager *diagnosticManager;
+    NeuDiagnosticManager *diag;
     NeuDiagnosticTree *diagnosticTree;
     NeuDiagnosticTree *diagnosticTree_0;
-    char *msg;
-    char *msg_0;
     real_T rtb_OUTPUT_1_0[6];
-    real_T tmp_4[4];
+    real_T tmp[4];
+    real_T tmp_3[4];
     real_T time;
     real_T time_0;
     real_T time_1;
     real_T time_2;
     real_T time_tmp;
     real_T time_tmp_0;
-    int32_T tmp_2;
-    int_T tmp_5[2];
+    real_T *parameterBundle_mRealParameters;
+    int_T tmp_4[2];
+    int_T j;
     int_T tmp_1;
-    boolean_T tmp;
+    boolean_T ok;
     boolean_T tmp_0;
-    boolean_T tmp_3;
+    boolean_T tmp_2;
+    if (rtmIsMajorTimeStep(rtM)) {
+      /* SimscapeRtp: '<S7>/RTP_1' incorporates:
+       *  Constant: '<Root>/Subsystem_around_RTP_00F46B65_PositionTargetValue'
+       *  Constant: '<Root>/Subsystem_around_RTP_00F46B65_VelocityTargetValue'
+       *  Constant: '<Root>/Subsystem_around_RTP_9CB22C5A_PositionTargetValue'
+       *  Constant: '<Root>/Subsystem_around_RTP_9CB22C5A_VelocityTargetValue'
+       */
+      if (rtDW->RTP_1_SetParametersNeeded) {
+        NeuDiagnosticTree *diagTree;
+        tmp[0] = -30.0;
+        tmp[1] = 0.0;
+        tmp[2] = -30.0;
+        tmp[3] = 0.0;
+        parameterBundle_mRealParameters = &tmp[0];
+        diag = rtw_create_diagnostics();
+        diagTree = neu_diagnostic_manager_get_initial_tree(diag);
+        expl_temp.mRealParameters.mN = 4;
+        expl_temp.mRealParameters.mX = parameterBundle_mRealParameters;
+        expl_temp.mLogicalParameters.mN = 0;
+        expl_temp.mLogicalParameters.mX = NULL;
+        expl_temp.mIntegerParameters.mN = 0;
+        expl_temp.mIntegerParameters.mX = NULL;
+        expl_temp.mIndexParameters.mN = 0;
+        expl_temp.mIndexParameters.mX = NULL;
+        ok = nesl_rtp_manager_set_rtps((NeslRtpManager *)rtDW->RTP_1_RtpManager,
+          rtM->Timing.t[0], expl_temp, diag);
+        if (!ok) {
+          ok = error_buffer_is_empty(rtmGetErrorStatus(rtM));
+          if (ok) {
+            char *msg;
+            msg = rtw_diagnostics_msg(diagTree);
+            rtmSetErrorStatus(rtM, msg);
+          }
+        }
+      }
+
+      rtDW->RTP_1_SetParametersNeeded = false;
+
+      /* End of SimscapeRtp: '<S7>/RTP_1' */
+    }
 
     /* SimscapeExecutionBlock: '<S14>/STATE_1' incorporates:
      *  SimscapeExecutionBlock: '<S14>/OUTPUT_1_0'
      */
-    simulationData = (NeslSimulationData *)rtDW.STATE_1_SimData;
+    simulationData = (NeslSimulationData *)rtDW->STATE_1_SimData;
     time_tmp = rtM->Timing.t[0];
     time = time_tmp;
     simulationData->mData->mTime.mN = 1;
     simulationData->mData->mTime.mX = &time;
     simulationData->mData->mContStates.mN = 4;
-    simulationData->mData->mContStates.mX = &rtX.dpJ1Rzq[0];
+    simulationData->mData->mContStates.mX = &rtX->dpJ1Rzq[0];
     simulationData->mData->mDiscStates.mN = 0;
-    simulationData->mData->mDiscStates.mX = &rtDW.STATE_1_Discrete;
+    simulationData->mData->mDiscStates.mX = &rtDW->STATE_1_Discrete;
     simulationData->mData->mModeVector.mN = 0;
-    simulationData->mData->mModeVector.mX = &rtDW.STATE_1_Modes;
-    tmp = false;
-    simulationData->mData->mFoundZcEvents = tmp;
-    tmp = rtmIsMajorTimeStep(rtM);
-    simulationData->mData->mIsMajorTimeStep = tmp;
+    simulationData->mData->mModeVector.mX = &rtDW->STATE_1_Modes;
+    ok = false;
+    simulationData->mData->mFoundZcEvents = ok;
+    ok = rtmIsMajorTimeStep(rtM);
+    simulationData->mData->mIsMajorTimeStep = ok;
     tmp_0 = false;
     simulationData->mData->mIsSolverAssertCheck = tmp_0;
     simulationData->mData->mIsSolverCheckingCIC = false;
@@ -253,7 +291,7 @@ void dp_step(void)
     simulationData->mData->mInputOffsets.mN = 1;
     simulationData->mData->mInputOffsets.mX = &tmp_1;
     simulationData->mData->mOutputs.mN = 4;
-    simulationData->mData->mOutputs.mX = &rtDW.STATE_1[0];
+    simulationData->mData->mOutputs.mX = &rtDW->STATE_1[0];
     simulationData->mData->mTolerances.mN = 0;
     simulationData->mData->mTolerances.mX = NULL;
     simulationData->mData->mCstateHasChanged = false;
@@ -264,51 +302,52 @@ void dp_step(void)
     simulationData->mData->mSampleHits.mN = 0;
     simulationData->mData->mSampleHits.mX = NULL;
     simulationData->mData->mIsFundamentalSampleHit = false;
-    diagnosticManager = (NeuDiagnosticManager *)rtDW.STATE_1_DiagMgr;
-    diagnosticTree = neu_diagnostic_manager_get_initial_tree(diagnosticManager);
-    tmp_2 = ne_simulator_method((NeslSimulator *)rtDW.STATE_1_Simulator,
-      NESL_SIM_OUTPUTS, simulationData, diagnosticManager);
-    if (tmp_2 != 0) {
-      tmp_3 = error_buffer_is_empty(rtmGetErrorStatus(rtM));
-      if (tmp_3) {
-        msg = rtw_diagnostics_msg(diagnosticTree);
-        rtmSetErrorStatus(rtM, msg);
+    diag = (NeuDiagnosticManager *)rtDW->STATE_1_DiagMgr;
+    diagnosticTree = neu_diagnostic_manager_get_initial_tree(diag);
+    j = ne_simulator_method((NeslSimulator *)rtDW->STATE_1_Simulator,
+      NESL_SIM_OUTPUTS, simulationData, diag);
+    if (j != 0) {
+      tmp_2 = error_buffer_is_empty(rtmGetErrorStatus(rtM));
+      if (tmp_2) {
+        char *msg_0;
+        msg_0 = rtw_diagnostics_msg(diagnosticTree);
+        rtmSetErrorStatus(rtM, msg_0);
       }
     }
 
     /* End of SimscapeExecutionBlock: '<S14>/STATE_1' */
 
     /* SimscapeExecutionBlock: '<S14>/OUTPUT_1_0' */
-    simulationData = (NeslSimulationData *)rtDW.OUTPUT_1_0_SimData;
+    simulationData = (NeslSimulationData *)rtDW->OUTPUT_1_0_SimData;
     time_1 = time_tmp;
     simulationData->mData->mTime.mN = 1;
     simulationData->mData->mTime.mX = &time_1;
     simulationData->mData->mContStates.mN = 0;
     simulationData->mData->mContStates.mX = NULL;
     simulationData->mData->mDiscStates.mN = 0;
-    simulationData->mData->mDiscStates.mX = &rtDW.OUTPUT_1_0_Discrete;
+    simulationData->mData->mDiscStates.mX = &rtDW->OUTPUT_1_0_Discrete;
     simulationData->mData->mModeVector.mN = 0;
-    simulationData->mData->mModeVector.mX = &rtDW.OUTPUT_1_0_Modes;
-    tmp_3 = false;
-    simulationData->mData->mFoundZcEvents = tmp_3;
-    simulationData->mData->mIsMajorTimeStep = tmp;
-    tmp = false;
-    simulationData->mData->mIsSolverAssertCheck = tmp;
+    simulationData->mData->mModeVector.mX = &rtDW->OUTPUT_1_0_Modes;
+    tmp_2 = false;
+    simulationData->mData->mFoundZcEvents = tmp_2;
+    simulationData->mData->mIsMajorTimeStep = ok;
+    ok = false;
+    simulationData->mData->mIsSolverAssertCheck = ok;
     simulationData->mData->mIsSolverCheckingCIC = false;
     simulationData->mData->mIsComputingJacobian = false;
     simulationData->mData->mIsEvaluatingF0 = false;
     simulationData->mData->mIsSolverRequestingReset = false;
     simulationData->mData->mIsModeUpdateTimeStep = tmp_0;
-    tmp_5[0] = 0;
-    tmp_4[0] = rtDW.STATE_1[0];
-    tmp_4[1] = rtDW.STATE_1[1];
-    tmp_4[2] = rtDW.STATE_1[2];
-    tmp_4[3] = rtDW.STATE_1[3];
-    tmp_5[1] = 4;
+    tmp_4[0] = 0;
+    tmp_3[0] = rtDW->STATE_1[0];
+    tmp_3[1] = rtDW->STATE_1[1];
+    tmp_3[2] = rtDW->STATE_1[2];
+    tmp_3[3] = rtDW->STATE_1[3];
+    tmp_4[1] = 4;
     simulationData->mData->mInputValues.mN = 4;
-    simulationData->mData->mInputValues.mX = &tmp_4[0];
+    simulationData->mData->mInputValues.mX = &tmp_3[0];
     simulationData->mData->mInputOffsets.mN = 2;
-    simulationData->mData->mInputOffsets.mX = &tmp_5[0];
+    simulationData->mData->mInputOffsets.mX = &tmp_4[0];
     simulationData->mData->mOutputs.mN = 6;
     simulationData->mData->mOutputs.mX = &rtb_OUTPUT_1_0[0];
     simulationData->mData->mTolerances.mN = 0;
@@ -320,15 +359,16 @@ void dp_step(void)
     simulationData->mData->mSampleHits.mN = 0;
     simulationData->mData->mSampleHits.mX = NULL;
     simulationData->mData->mIsFundamentalSampleHit = false;
-    diagnosticManager = (NeuDiagnosticManager *)rtDW.OUTPUT_1_0_DiagMgr;
-    diagnosticTree_0 = neu_diagnostic_manager_get_initial_tree(diagnosticManager);
-    tmp_2 = ne_simulator_method((NeslSimulator *)rtDW.OUTPUT_1_0_Simulator,
-      NESL_SIM_OUTPUTS, simulationData, diagnosticManager);
-    if (tmp_2 != 0) {
-      tmp = error_buffer_is_empty(rtmGetErrorStatus(rtM));
-      if (tmp) {
-        msg_0 = rtw_diagnostics_msg(diagnosticTree_0);
-        rtmSetErrorStatus(rtM, msg_0);
+    diag = (NeuDiagnosticManager *)rtDW->OUTPUT_1_0_DiagMgr;
+    diagnosticTree_0 = neu_diagnostic_manager_get_initial_tree(diag);
+    j = ne_simulator_method((NeslSimulator *)rtDW->OUTPUT_1_0_Simulator,
+      NESL_SIM_OUTPUTS, simulationData, diag);
+    if (j != 0) {
+      ok = error_buffer_is_empty(rtmGetErrorStatus(rtM));
+      if (ok) {
+        char *msg_1;
+        msg_1 = rtw_diagnostics_msg(diagnosticTree_0);
+        rtmSetErrorStatus(rtM, msg_1);
       }
     }
   }
@@ -337,22 +377,21 @@ void dp_step(void)
     NeslSimulationData *simulationData;
     NeuDiagnosticManager *diagnosticManager;
     NeuDiagnosticTree *diagnosticTree;
-    char *msg;
     real_T time;
     int_T tmp_0;
     boolean_T tmp;
 
     /* Update for SimscapeExecutionBlock: '<S14>/STATE_1' */
-    simulationData = (NeslSimulationData *)rtDW.STATE_1_SimData;
+    simulationData = (NeslSimulationData *)rtDW->STATE_1_SimData;
     time = rtM->Timing.t[0];
     simulationData->mData->mTime.mN = 1;
     simulationData->mData->mTime.mX = &time;
     simulationData->mData->mContStates.mN = 4;
-    simulationData->mData->mContStates.mX = &rtX.dpJ1Rzq[0];
+    simulationData->mData->mContStates.mX = &rtX->dpJ1Rzq[0];
     simulationData->mData->mDiscStates.mN = 0;
-    simulationData->mData->mDiscStates.mX = &rtDW.STATE_1_Discrete;
+    simulationData->mData->mDiscStates.mX = &rtDW->STATE_1_Discrete;
     simulationData->mData->mModeVector.mN = 0;
-    simulationData->mData->mModeVector.mX = &rtDW.STATE_1_Modes;
+    simulationData->mData->mModeVector.mX = &rtDW->STATE_1_Modes;
     tmp = false;
     simulationData->mData->mFoundZcEvents = tmp;
     simulationData->mData->mIsMajorTimeStep = rtmIsMajorTimeStep(rtM);
@@ -369,13 +408,14 @@ void dp_step(void)
     simulationData->mData->mInputValues.mN = 0;
     simulationData->mData->mInputOffsets.mN = 1;
     simulationData->mData->mInputOffsets.mX = &tmp_0;
-    diagnosticManager = (NeuDiagnosticManager *)rtDW.STATE_1_DiagMgr;
+    diagnosticManager = (NeuDiagnosticManager *)rtDW->STATE_1_DiagMgr;
     diagnosticTree = neu_diagnostic_manager_get_initial_tree(diagnosticManager);
-    tmp_0 = ne_simulator_method((NeslSimulator *)rtDW.STATE_1_Simulator,
+    tmp_0 = ne_simulator_method((NeslSimulator *)rtDW->STATE_1_Simulator,
       NESL_SIM_UPDATE, simulationData, diagnosticManager);
     if (tmp_0 != 0) {
       tmp = error_buffer_is_empty(rtmGetErrorStatus(rtM));
       if (tmp) {
+        char *msg;
         msg = rtw_diagnostics_msg(diagnosticTree);
         rtmSetErrorStatus(rtM, msg);
       }
@@ -385,7 +425,7 @@ void dp_step(void)
   }                                    /* end MajorTimeStep */
 
   if (rtmIsMajorTimeStep(rtM)) {
-    rt_ertODEUpdateContinuousStates(&rtM->solverInfo);
+    rt_ertODEUpdateContinuousStates(&rtM->solverInfo, rtM);
 
     /* Update absolute time for base rate */
     /* The "clockTick0" counts the number of times the code of this task has
@@ -409,29 +449,30 @@ void dp_step(void)
 }
 
 /* Derivatives for root system: '<Root>' */
-void dp_derivatives(void)
+void dp_derivatives(RT_MODEL *const rtM)
 {
+  DW *rtDW = rtM->dwork;
+  X *rtX = rtM->contStates;
   NeslSimulationData *simulationData;
   NeuDiagnosticManager *diagnosticManager;
   NeuDiagnosticTree *diagnosticTree;
   XDot *_rtXdot;
-  char *msg;
   real_T time;
   int_T tmp_0;
   boolean_T tmp;
   _rtXdot = ((XDot *) rtM->derivs);
 
   /* Derivatives for SimscapeExecutionBlock: '<S14>/STATE_1' */
-  simulationData = (NeslSimulationData *)rtDW.STATE_1_SimData;
+  simulationData = (NeslSimulationData *)rtDW->STATE_1_SimData;
   time = rtM->Timing.t[0];
   simulationData->mData->mTime.mN = 1;
   simulationData->mData->mTime.mX = &time;
   simulationData->mData->mContStates.mN = 4;
-  simulationData->mData->mContStates.mX = &rtX.dpJ1Rzq[0];
+  simulationData->mData->mContStates.mX = &rtX->dpJ1Rzq[0];
   simulationData->mData->mDiscStates.mN = 0;
-  simulationData->mData->mDiscStates.mX = &rtDW.STATE_1_Discrete;
+  simulationData->mData->mDiscStates.mX = &rtDW->STATE_1_Discrete;
   simulationData->mData->mModeVector.mN = 0;
-  simulationData->mData->mModeVector.mX = &rtDW.STATE_1_Modes;
+  simulationData->mData->mModeVector.mX = &rtDW->STATE_1_Modes;
   tmp = false;
   simulationData->mData->mFoundZcEvents = tmp;
   simulationData->mData->mIsMajorTimeStep = rtmIsMajorTimeStep(rtM);
@@ -450,13 +491,14 @@ void dp_derivatives(void)
   simulationData->mData->mInputOffsets.mX = &tmp_0;
   simulationData->mData->mDx.mN = 4;
   simulationData->mData->mDx.mX = &_rtXdot->dpJ1Rzq[0];
-  diagnosticManager = (NeuDiagnosticManager *)rtDW.STATE_1_DiagMgr;
+  diagnosticManager = (NeuDiagnosticManager *)rtDW->STATE_1_DiagMgr;
   diagnosticTree = neu_diagnostic_manager_get_initial_tree(diagnosticManager);
-  tmp_0 = ne_simulator_method((NeslSimulator *)rtDW.STATE_1_Simulator,
+  tmp_0 = ne_simulator_method((NeslSimulator *)rtDW->STATE_1_Simulator,
     NESL_SIM_DERIVATIVES, simulationData, diagnosticManager);
   if (tmp_0 != 0) {
     tmp = error_buffer_is_empty(rtmGetErrorStatus(rtM));
     if (tmp) {
+      char *msg;
       msg = rtw_diagnostics_msg(diagnosticTree);
       rtmSetErrorStatus(rtM, msg);
     }
@@ -466,8 +508,11 @@ void dp_derivatives(void)
 }
 
 /* Model initialize function */
-void dp_initialize(void)
+void dp_initialize(RT_MODEL *const rtM)
 {
+  DW *rtDW = rtM->dwork;
+  X *rtX = rtM->contStates;
+
   /* Registration code */
   {
     /* Setup solver object */
@@ -492,67 +537,95 @@ void dp_initialize(void)
   rtM->intgData.f[0] = rtM->odeF[0];
   rtM->intgData.f[1] = rtM->odeF[1];
   rtM->intgData.f[2] = rtM->odeF[2];
-  rtM->contStates = ((X *) &rtX);
+  rtM->contStates = ((X *) rtX);
   rtsiSetSolverData(&rtM->solverInfo, (void *)&rtM->intgData);
   rtsiSetIsMinorTimeStepWithModeChange(&rtM->solverInfo, false);
   rtsiSetSolverName(&rtM->solverInfo,"ode3");
   rtmSetTPtr(rtM, &rtM->Timing.tArray[0]);
   rtM->Timing.stepSize0 = 0.01;
 
+  /* states (continuous) */
+  {
+    (void) memset((void *)rtX, 0,
+                  sizeof(X));
+  }
+
+  /* states (dwork) */
+  (void) memset((void *)rtDW, 0,
+                sizeof(DW));
+
+  /* Initialize DataMapInfo substructure containing ModelMap for C API */
+  dp_InitializeDataMapInfo(rtM, (X *)rtM->contStates);
+
   {
     NeModelParameters modelParameters;
     NeModelParameters modelParameters_0;
+    NeslRtpManager *manager;
+    NeslRtpManager *manager_0;
     NeslSimulationData *tmp_1;
-    NeslSimulator *tmp;
+    NeslSimulator *tmp_0;
     NeuDiagnosticManager *diagnosticManager;
     NeuDiagnosticTree *diagnosticTree;
     NeuDiagnosticTree *diagnosticTree_0;
-    char *msg;
-    char *msg_0;
     real_T tmp_2;
     int32_T tmp_3;
-    boolean_T tmp_0;
+    boolean_T tmp;
+
+    /* Start for SimscapeRtp: '<S7>/RTP_1' */
+    manager_0 = nesl_lease_rtp_manager("dp/Solver Configuration_1", 0);
+    manager = manager_0;
+    tmp = pointer_is_null(manager_0);
+    if (tmp) {
+      dp_a151ee3d_1_gateway();
+      manager = nesl_lease_rtp_manager("dp/Solver Configuration_1", 0);
+    }
+
+    rtDW->RTP_1_RtpManager = (void *)manager;
+    rtDW->RTP_1_SetParametersNeeded = true;
+
+    /* End of Start for SimscapeRtp: '<S7>/RTP_1' */
 
     /* Start for SimscapeExecutionBlock: '<S14>/STATE_1' */
-    tmp = nesl_lease_simulator("dp/Solver Configuration_1", 0, 0);
-    rtDW.STATE_1_Simulator = (void *)tmp;
-    tmp_0 = pointer_is_null(rtDW.STATE_1_Simulator);
-    if (tmp_0) {
+    tmp_0 = nesl_lease_simulator("dp/Solver Configuration_1", 0, 0);
+    rtDW->STATE_1_Simulator = (void *)tmp_0;
+    tmp = pointer_is_null(rtDW->STATE_1_Simulator);
+    if (tmp) {
       dp_a151ee3d_1_gateway();
-      tmp = nesl_lease_simulator("dp/Solver Configuration_1", 0, 0);
-      rtDW.STATE_1_Simulator = (void *)tmp;
+      tmp_0 = nesl_lease_simulator("dp/Solver Configuration_1", 0, 0);
+      rtDW->STATE_1_Simulator = (void *)tmp_0;
     }
 
     tmp_1 = nesl_create_simulation_data();
-    rtDW.STATE_1_SimData = (void *)tmp_1;
+    rtDW->STATE_1_SimData = (void *)tmp_1;
     diagnosticManager = rtw_create_diagnostics();
-    rtDW.STATE_1_DiagMgr = (void *)diagnosticManager;
+    rtDW->STATE_1_DiagMgr = (void *)diagnosticManager;
     modelParameters.mSolverType = NE_SOLVER_TYPE_DAE;
     modelParameters.mSolverAbsTol = 0.001;
     modelParameters.mSolverRelTol = 0.001;
     modelParameters.mSolverModifyAbsTol = NE_MODIFY_ABS_TOL_NO;
     modelParameters.mStartTime = 0.0;
-    modelParameters.mLoadInitialState = false;
+    modelParameters.mLoadInitialState = true;
     modelParameters.mUseSimState = false;
     modelParameters.mLinTrimCompile = false;
     modelParameters.mLoggingMode = SSC_LOGGING_ALL;
-    modelParameters.mRTWModifiedTimeStamp = 5.85518924E+8;
+    modelParameters.mRTWModifiedTimeStamp = 5.85714389E+8;
     tmp_2 = 0.001;
     modelParameters.mSolverTolerance = tmp_2;
     tmp_2 = 0.01;
     modelParameters.mFixedStepSize = tmp_2;
-    tmp_0 = false;
-    modelParameters.mVariableStepSolver = tmp_0;
-    tmp_0 = false;
-    modelParameters.mIsUsingODEN = tmp_0;
+    tmp = false;
+    modelParameters.mVariableStepSolver = tmp;
+    tmp = false;
+    modelParameters.mIsUsingODEN = tmp;
     modelParameters.mZcDisabled = true;
-    diagnosticManager = (NeuDiagnosticManager *)rtDW.STATE_1_DiagMgr;
+    diagnosticManager = (NeuDiagnosticManager *)rtDW->STATE_1_DiagMgr;
     diagnosticTree = neu_diagnostic_manager_get_initial_tree(diagnosticManager);
-    tmp_3 = nesl_initialize_simulator((NeslSimulator *)rtDW.STATE_1_Simulator,
+    tmp_3 = nesl_initialize_simulator((NeslSimulator *)rtDW->STATE_1_Simulator,
       &modelParameters, diagnosticManager);
     if (tmp_3 != 0) {
-      tmp_0 = error_buffer_is_empty(rtmGetErrorStatus(rtM));
-      if (tmp_0) {
+      tmp = error_buffer_is_empty(rtmGetErrorStatus(rtM));
+      if (tmp) {
+        char *msg;
         msg = rtw_diagnostics_msg(diagnosticTree);
         rtmSetErrorStatus(rtM, msg);
       }
@@ -561,51 +634,65 @@ void dp_initialize(void)
     /* End of Start for SimscapeExecutionBlock: '<S14>/STATE_1' */
 
     /* Start for SimscapeExecutionBlock: '<S14>/OUTPUT_1_0' */
-    tmp = nesl_lease_simulator("dp/Solver Configuration_1", 1, 0);
-    rtDW.OUTPUT_1_0_Simulator = (void *)tmp;
-    tmp_0 = pointer_is_null(rtDW.OUTPUT_1_0_Simulator);
-    if (tmp_0) {
+    tmp_0 = nesl_lease_simulator("dp/Solver Configuration_1", 1, 0);
+    rtDW->OUTPUT_1_0_Simulator = (void *)tmp_0;
+    tmp = pointer_is_null(rtDW->OUTPUT_1_0_Simulator);
+    if (tmp) {
       dp_a151ee3d_1_gateway();
-      tmp = nesl_lease_simulator("dp/Solver Configuration_1", 1, 0);
-      rtDW.OUTPUT_1_0_Simulator = (void *)tmp;
+      tmp_0 = nesl_lease_simulator("dp/Solver Configuration_1", 1, 0);
+      rtDW->OUTPUT_1_0_Simulator = (void *)tmp_0;
     }
 
     tmp_1 = nesl_create_simulation_data();
-    rtDW.OUTPUT_1_0_SimData = (void *)tmp_1;
+    rtDW->OUTPUT_1_0_SimData = (void *)tmp_1;
     diagnosticManager = rtw_create_diagnostics();
-    rtDW.OUTPUT_1_0_DiagMgr = (void *)diagnosticManager;
+    rtDW->OUTPUT_1_0_DiagMgr = (void *)diagnosticManager;
     modelParameters_0.mSolverType = NE_SOLVER_TYPE_DAE;
     modelParameters_0.mSolverAbsTol = 0.001;
     modelParameters_0.mSolverRelTol = 0.001;
     modelParameters_0.mSolverModifyAbsTol = NE_MODIFY_ABS_TOL_NO;
     modelParameters_0.mStartTime = 0.0;
-    modelParameters_0.mLoadInitialState = false;
+    modelParameters_0.mLoadInitialState = true;
     modelParameters_0.mUseSimState = false;
     modelParameters_0.mLinTrimCompile = false;
     modelParameters_0.mLoggingMode = SSC_LOGGING_ALL;
-    modelParameters_0.mRTWModifiedTimeStamp = 5.85518924E+8;
+    modelParameters_0.mRTWModifiedTimeStamp = 5.85714389E+8;
     tmp_2 = 0.001;
     modelParameters_0.mSolverTolerance = tmp_2;
     tmp_2 = 0.01;
     modelParameters_0.mFixedStepSize = tmp_2;
-    tmp_0 = false;
-    modelParameters_0.mVariableStepSolver = tmp_0;
-    tmp_0 = false;
-    modelParameters_0.mIsUsingODEN = tmp_0;
+    tmp = false;
+    modelParameters_0.mVariableStepSolver = tmp;
+    tmp = false;
+    modelParameters_0.mIsUsingODEN = tmp;
     modelParameters_0.mZcDisabled = true;
-    diagnosticManager = (NeuDiagnosticManager *)rtDW.OUTPUT_1_0_DiagMgr;
+    diagnosticManager = (NeuDiagnosticManager *)rtDW->OUTPUT_1_0_DiagMgr;
     diagnosticTree_0 = neu_diagnostic_manager_get_initial_tree(diagnosticManager);
-    tmp_3 = nesl_initialize_simulator((NeslSimulator *)rtDW.OUTPUT_1_0_Simulator,
-      &modelParameters_0, diagnosticManager);
+    tmp_3 = nesl_initialize_simulator((NeslSimulator *)
+      rtDW->OUTPUT_1_0_Simulator, &modelParameters_0, diagnosticManager);
     if (tmp_3 != 0) {
-      tmp_0 = error_buffer_is_empty(rtmGetErrorStatus(rtM));
-      if (tmp_0) {
+      tmp = error_buffer_is_empty(rtmGetErrorStatus(rtM));
+      if (tmp) {
+        char *msg_0;
         msg_0 = rtw_diagnostics_msg(diagnosticTree_0);
         rtmSetErrorStatus(rtM, msg_0);
       }
     }
 
     /* End of Start for SimscapeExecutionBlock: '<S14>/OUTPUT_1_0' */
+  }
+
+  /* initial state override */
+  {
+    static const real_T rtcs0_dpJ1Rzq[4] = {
+      0.0
+      , 0.0
+      , 0.0
+      , 0.0
+    };
+
+    (void) memcpy(rtX->dpJ1Rzq, rtcs0_dpJ1Rzq,
+                  4*sizeof(real_T));
   }
 }
 

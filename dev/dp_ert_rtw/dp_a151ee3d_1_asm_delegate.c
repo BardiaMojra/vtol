@@ -12,11 +12,53 @@
 #include "sm_RuntimeDerivedValuesBundle.h"
 #include "sm_CTarget.h"
 
+static void setTargets_0(const RuntimeDerivedValuesBundle *rtdv, double *values,
+  double *auxData)
+{
+  const double *rtdvd = rtdv->mDoubles.mValues;
+  const int *rtdvi = rtdv->mInts.mValues;
+  (void) rtdvi;
+  (void) auxData;
+  values[0] = rtdvd[0];
+}
+
+static void setTargets_1(const RuntimeDerivedValuesBundle *rtdv, double *values,
+  double *auxData)
+{
+  const double *rtdvd = rtdv->mDoubles.mValues;
+  const int *rtdvi = rtdv->mInts.mValues;
+  (void) rtdvi;
+  (void) auxData;
+  values[0] = rtdvd[1];
+}
+
+static void setTargets_2(const RuntimeDerivedValuesBundle *rtdv, double *values,
+  double *auxData)
+{
+  const double *rtdvd = rtdv->mDoubles.mValues;
+  const int *rtdvi = rtdv->mInts.mValues;
+  (void) rtdvi;
+  (void) auxData;
+  values[0] = rtdvd[2];
+}
+
+static void setTargets_3(const RuntimeDerivedValuesBundle *rtdv, double *values,
+  double *auxData)
+{
+  const double *rtdvd = rtdv->mDoubles.mValues;
+  const int *rtdvi = rtdv->mInts.mValues;
+  (void) rtdvi;
+  (void) auxData;
+  values[0] = rtdvd[3];
+}
+
 void dp_a151ee3d_1_setTargets(const RuntimeDerivedValuesBundle *rtdv, CTarget
   *targets)
 {
-  (void) rtdv;
-  (void) targets;
+  setTargets_0(rtdv, targets[0].mValue, targets[0].mAuxiliaryTargetData);
+  setTargets_1(rtdv, targets[1].mValue, targets[1].mAuxiliaryTargetData);
+  setTargets_2(rtdv, targets[2].mValue, targets[2].mAuxiliaryTargetData);
+  setTargets_3(rtdv, targets[3].mValue, targets[3].mAuxiliaryTargetData);
 }
 
 void dp_a151ee3d_1_resetAsmStateVector(const void *mech, double *state)

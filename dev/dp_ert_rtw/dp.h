@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'dp'.
  *
- * Model version                  : 2.0
+ * Model version                  : 2.1
  * Simulink Coder version         : 9.8 (R2022b) 13-May-2022
- * C/C++ source code generated on : Mon Sep 19 15:08:47 2022
+ * C/C++ source code generated on : Wed Sep 21 21:26:42 2022
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: Intel->x86-64 (Linux 64)
@@ -26,13 +26,23 @@
 #include "rtwtypes.h"
 #include "rtw_continuous.h"
 #include "rtw_solver.h"
-#include "nesl_rtw.h"
+#include "nesl_rtw_rtp.h"
 #include "dp_a151ee3d_1_gateway.h"
+#include "nesl_rtw.h"
 #endif                                 /* dp_COMMON_INCLUDES_ */
 
+#include "rtw_modelmap.h"
 #include <string.h>
 
 /* Macros for accessing real-time model data structure */
+#ifndef rtmGetDataMapInfo
+#define rtmGetDataMapInfo(rtm)         ((rtm)->DataMapInfo)
+#endif
+
+#ifndef rtmSetDataMapInfo
+#define rtmSetDataMapInfo(rtm, val)    ((rtm)->DataMapInfo = (val))
+#endif
+
 #ifndef rtmGetErrorStatus
 #define rtmGetErrorStatus(rtm)         ((rtm)->errorStatus)
 #endif
@@ -64,11 +74,21 @@
 /* Forward declaration for rtModel */
 typedef struct tag_RTM RT_MODEL;
 
+#ifndef SS_UINT64
+#define SS_UINT64                      17
+#endif
+
+#ifndef SS_INT64
+#define SS_INT64                       18
+#endif
+
 /* Block signals and states (default storage) for system '<Root>' */
 typedef struct {
   real_T STATE_1[4];                   /* '<S14>/STATE_1' */
+  real_T RTP_1;                        /* '<S7>/RTP_1' */
   real_T STATE_1_Discrete;             /* '<S14>/STATE_1' */
   real_T OUTPUT_1_0_Discrete;          /* '<S14>/OUTPUT_1_0' */
+  void* RTP_1_RtpManager;              /* '<S7>/RTP_1' */
   void* STATE_1_Simulator;             /* '<S14>/STATE_1' */
   void* STATE_1_SimData;               /* '<S14>/STATE_1' */
   void* STATE_1_DiagMgr;               /* '<S14>/STATE_1' */
@@ -84,6 +104,7 @@ typedef struct {
   void* SINK_1_RtwLogFcnManager;       /* '<S14>/SINK_1' */
   int_T STATE_1_Modes;                 /* '<S14>/STATE_1' */
   int_T OUTPUT_1_0_Modes;              /* '<S14>/OUTPUT_1_0' */
+  boolean_T RTP_1_SetParametersNeeded; /* '<S7>/RTP_1' */
   boolean_T STATE_1_FirstOutput;       /* '<S14>/STATE_1' */
   boolean_T OUTPUT_1_0_FirstOutput;    /* '<S14>/OUTPUT_1_0' */
 } DW;
@@ -129,6 +150,19 @@ struct tag_RTM {
   real_T odeY[4];
   real_T odeF[3][4];
   ODE3_IntgData intgData;
+  DW *dwork;
+
+  /*
+   * DataMapInfo:
+   * The following substructure contains information regarding
+   * structures generated in the model's C API.
+   */
+  struct {
+    rtwCAPI_ModelMappingInfo mmi;
+    void* dataAddress[6];
+    int32_T* vardimsAddress[6];
+    RTWLoggingFcnPtr loggingPtrs[6];
+  } DataMapInfo;
 
   /*
    * Sizes:
@@ -158,18 +192,13 @@ struct tag_RTM {
   } Timing;
 };
 
-/* Continuous states (default storage) */
-extern X rtX;
-
-/* Block signals and states (default storage) */
-extern DW rtDW;
-
 /* Model entry point functions */
-extern void dp_initialize(void);
-extern void dp_step(void);
+extern void dp_initialize(RT_MODEL *const rtM);
+extern void dp_step(RT_MODEL *const rtM);
 
-/* Real-time Model object */
-extern RT_MODEL *const rtM;
+/* Function to get C API Model Mapping Static Info */
+extern const rtwCAPI_ModelMappingStaticInfo*
+  dp_GetCAPIStaticMap(void);
 
 /*-
  * These blocks were eliminated from the model due to optimizations:
