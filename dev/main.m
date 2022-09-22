@@ -2,12 +2,15 @@
 % todo: 
 % - impliment DP
 % - in code simScape
-% https://www.mathworks.com/help/simulink/ug/run-multiple-simulations.html 
+% -- https://www.mathworks.com/help/mpc/ug/code-generation-with-simulink-coder.html 
 % - port in DIP LQR controller and compare results
 %% init sys 
 
 %warning('off','all')
-close all; clear; clc;
+close all; clear; clc; addpath(genpath('./'));
+x_init = [1 1 1 1];
+
+
 cfg  = cfg_class(TID    = ['T000','000','_koop_',''], ...
                  brief  = ["."], ...
                  btype  = "VanDerPol", ...
@@ -15,8 +18,9 @@ cfg  = cfg_class(TID    = ['T000','000','_koop_',''], ...
                  nTrials=10, nSamps=200, ...
                  end_frame  = 200);
 dlgr  = dlgr_class(); dlgr.load_cfg(cfg);
-%% gen dat 
-vp    = VanDerPol_class(); vp.load_cfg(cfg) %
+%% dat/sim
+%vp    = VanDerPol_class(); vp.load_cfg(cfg) %
+dp     = dp_simCls(); 
 %% init app modules
 kp    = koopman_class(); kp.load_cfg(cfg); % also loads dat 
 %% gen data 
