@@ -10,11 +10,13 @@ classdef cfg_class < matlab.System
     brief       = '' % test brief 
     projDir     =  pwd 
     outDir      = [pwd '/out']   
+    simDir      = [pwd '/sim']   
     datDir      = '~/data/vtol'   
     ttag        % test tag [TID]_[btype]_[bnum]% dset
     toutDir     % outDir+ttag
-    % dataset 
-    btype       % usr input
+    % benchmark cfg  
+    bmode       = "sim" % or "dat"
+    btype       % usr input e.g. "dp"
     btypes      = {"sp","dp","vtol"}
     bnum        = nan % btype subset
     st_frame    = nan % start frame index
@@ -84,10 +86,11 @@ classdef cfg_class < matlab.System
       end      
       obj.ttag = strrep(obj.ttag,' ','_');
       %obj.ttag = strrep(obj.ttag,'-','_');
-      obj.toutDir = strcat(obj.outDir,'/',obj.ttag,'/');
+
     end % set_ttag()
     
     function set_toutDir(obj)
+      obj.toutDir = strcat(obj.outDir,'/',obj.ttag,'/');
       if not(isfolder(obj.toutDir)) % create toutDir
         disp("[config]->> test_toutDir does NOT exist: ");
         disp(obj.toutDir);

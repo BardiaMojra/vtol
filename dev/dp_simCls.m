@@ -8,10 +8,12 @@ classdef dp_simCls < matlab.System
     toutDir         
     nTrials    % = cfg.sim.nTrials;
     nSamps    %  = cfg.sim.nSamps;    
+    
+    soutDir
     %datDir            
     %st_frame      
     %end_frame    
-    btype       = "dp" % double pendulum
+    btype       %= "dp" % double pendulum
     %bnum
     %% settings
 
@@ -39,6 +41,7 @@ classdef dp_simCls < matlab.System
   methods 
     function obj = dp_simCls(varargin) 
       setProperties(obj,nargin,varargin{:}) % init obj w name-value args
+      obj.check_deps();
     end 
   end % methods 
   methods (Access = public) 
@@ -48,9 +51,11 @@ classdef dp_simCls < matlab.System
 
     function load_cfg(obj, cfg) 
       obj.toutDir     = cfg.toutDir;
-      obj.nTrials     = cfg.nTrials;
-      obj.nSamps      = cfg.nSamps;
-      cfg.sim         = obj; 
+      obj.simDir      = cfg.simDir;
+      %obj.btype       = cfg.btype;
+      %obj.nTrials     = cfg.nTrials;
+      %obj.nSamps      = cfg.nSamps;
+      %cfg.sim         = obj; 
 
       obj.init();
     end
@@ -96,12 +101,36 @@ classdef dp_simCls < matlab.System
 
   methods  (Access = private)
     function init(obj)
-      %obj.dfdx = jacobian(obj.f, 0); %%
-      %obj.dfdu = jacobian(obj.f, 1); %%
-      %obj.nx = 2;
-      %obj.nu = 2;
-      obj.ransamp_x();
+      obj.set_soutDir();% setup soutDir
+
     end
+
+    function set_soutDir(obj)
+      obj.soutDir = strcat(obj.simDir,"/",obj.btype,'/');
+      if not(isfolder(obj.soutDir)) % create soutDir
+        disp("[config]->> soutDir does NOT exist: ");
+        disp(obj.soutDir);
+        mkdir(obj.soutDir);
+        disp("[config]->> directory was created!");
+      else 
+        disp("[config]->> soutDir exists and will be removed: ");
+        disp(obj.soutDir);
+        rmdir(obj.soutDir, 's');
+        mkdir(obj.soutDir);
+        disp("[config]->> directory was created!");
+      end 
+    end % set_soutDir()
+
+    function check_deps(~)
+      if ~mpcchecktoolboxinstalled('simulink')
+        disp('Simulink is required to run this example.')
+        return
+      end
+      if ~mpcchecktoolboxinstalled('simulinkcoder')
+        disp('Simulink Coder is required to run this example.');
+        return
+      end
+    end % check_deps()
     
   end % private methods
 end
