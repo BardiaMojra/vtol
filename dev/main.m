@@ -8,7 +8,7 @@
 
 %warning('off','all')
 close all; clear; clc; addpath(genpath('./'));
-x_init = [1 1 1 1];
+%x_init = [1 1 1 1];
 
 
 cfg  = cfg_class(TID    = ['T000','000','_koop_',''], ...
@@ -19,7 +19,7 @@ cfg  = cfg_class(TID    = ['T000','000','_koop_',''], ...
                  end_frame  = 200);
 dlgr  = dlgr_class(); dlgr.load_cfg(cfg);
 %% dat/sim
-%vp    = VanDerPol_class(); vp.load_cfg(cfg) %
+vp    = VanDerPol_class(); vp.load_cfg(cfg) %
 dp     = dp_simCls(); 
 %% init app modules
 kp    = koopman_class(); kp.load_cfg(cfg); % also loads dat 

@@ -21,14 +21,14 @@ close all; clear; clc; addpath(genpath('./'));
 cwd = pwd;
 tmpdir = [pwd '/sim/dp'];
 mkdir(tmpdir);
-cd(tmpdir);
+%cd(tmpdir);
 
 %% cfg sim 
 %plant = ss(tf([3 1],[1 0.6 1]));
 %plant = dp;
 open("dp");
 
-plant = linearize('dp'); % ??
+plant = dp; % ??
 
 
 plant.InputName = {'Mass Flow';'Heat Flow';'Pressure'};

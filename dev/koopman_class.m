@@ -81,9 +81,9 @@ classdef koopman_class < matlab.System
     end
 
     function m = get_optCont(~, m)
-      m.Q     = diag([1.0, 1.0, 0., 0.]);
+      m.Q     = diag([1.0, 1.0, 0., 0.]); %% note: no weights on lifted space dims
       m.R     = diag([1.0])* 1e-2;
-      m.P     = care(m.A, m.B, m.Q, m.R);
+      m.P     = care(m.A, m.B, m.Q, m.R); % Ricatti solution 
       m.Klqr  = m.R\(m.B'*m.P);
     end % get_optCont()
   
