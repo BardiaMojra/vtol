@@ -31,10 +31,22 @@ close all; clear; clc; addpath(genpath('./'));
 %plant = ss(tf([3 1],[1 0.6 1]));
 %plant = dp;
 sim = "dp"; 
-open_system("sim");  % open dp in simScape 
+%open_system(sim);  % open dp in simScape 
 
 opSpec = operspec(sim); 
+disp(opSpec);
+% https://www.mathworks.com/help/mpc/ug/code-generation-with-simulink-coder.html#d124e33620
+% https://www.mathworks.com/help/rtw/ug/generate-code-and-simulate-models-in-project.html
+% https://www.mathworks.com/help/sm/ug/how-to-build-a-model.html
+% https://www.mathworks.com/help/slcontrol/ug/operspec.html?s_tid=srchtitle 
+% https://www.mathworks.com/help/slcontrol/ug/addoutputspec.html
+% https://www.mathworks.com/help/slcontrol/ug/findop.html
+opSpec.States(1).x(1) = 1;
+%opSpec.States(1).x(2) = 1;
+%opSpec.States(1).x(3) = 1;
+%opSpec.States(1).x(4) = 1;
 
+disp(opSpec);
 plant = dp; % ??
 
 
