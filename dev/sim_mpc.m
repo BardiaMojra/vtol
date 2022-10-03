@@ -47,13 +47,13 @@ opSpec.States(1).x(1) = 1;
 %opSpec.States(1).x(4) = 1;
 
 disp(opSpec);
-plant = dp; % ??
 
 
-plant.InputName = {'Mass Flow';'Heat Flow';'Pressure'};
-plant.OutputName = {'Temperature';'Level'};
-plant.InputUnit = {'kg/s' 'J/s' 'Pa'};
-plant.OutputUnit = {'K' 'm'};
+
+sim.InputName = {'Mass Flow';'Heat Flow';'Pressure'};
+sim.OutputName = {'Temperature';'Level'};
+sim.InputUnit = {'kg/s' 'J/s' 'Pa'};
+sim.OutputUnit = {'K' 'm'};
 
 Ts = 0.1;   %Sample time
 p = 10;     %Prediction horizon

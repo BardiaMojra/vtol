@@ -41,17 +41,17 @@ classdef cfg_class < matlab.System
       obj.set_ttag();
       obj.set_toutDir();
       %obj.load_dat(); % 
-      obj.load_sim(); % 
+      %obj.load_sim(); % 
       obj.sav_cfg(); % sav cfg to file
     end
 
-    function load_sim(obj)
-      if strcmp(obj.btype, 'VanDerPol') % --------->>> 
-        obj.sim       = VanDerPol_class(); obj.sim.load_cfg(obj); % load sim
-      else
-        error('[cfg]->> simulation dataset...');
-      end    
-    end
+%     function load_sim(obj)
+%       if strcmp(obj.btype, 'VanDerPol') % --------->>> 
+%         obj.sim       = VanDerPol_class(); obj.sim.load_cfg(obj); % load sim
+%       else
+%         error('[cfg]->> simulation dataset...');
+%       end    
+%     end
     
     function load_dat(obj)
       obj.dat       = dat_class(); obj.dat.load_cfg(obj); % load data

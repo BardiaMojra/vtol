@@ -37,7 +37,7 @@ classdef koopman_class < matlab.System
       obj.nTrials     = cfg.sim.nTrials;
       obj.nSamps      = cfg.sim.nSamps;
       obj.sim         = cfg.sim;
-      obj.nObs = obj.nxObs + obj.nuObs;
+      obj.nObs        = obj.nxObs + obj.nuObs;
       obj.init();
       obj.get_model(cfg.sim);
     end
@@ -108,12 +108,6 @@ classdef koopman_class < matlab.System
   methods  (Access = private)
     function init(obj)
     end
-    
-    %function load_dat(obj, dat)
-    %end
-
-
-   
 
   end % private methods
 end

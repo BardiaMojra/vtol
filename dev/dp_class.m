@@ -1,25 +1,22 @@
-classdef dp_simCls < matlab.System 
+classdef dp_class < matlab.System 
   properties
     %% class
-    cName       = "dp_simCls" % Physics-informed dynamic mode decompositions
+    cName       = "dp_class" % 
     desc        = ["Double pendulum simulation class"]
     %credit      = ""
+    %% features 
+    en_sav_dat
+    en_sav_sim
     %% cfg (argin)
-    toutDir         
-    nTrials    % = cfg.sim.nTrials;
-    nSamps    %  = cfg.sim.nSamps;    
-    
+    simDir
+    toutDir 
+    btype       = "dp" % double pendulum
+    %bnum    
     soutDir
     %datDir            
-    %st_frame      
-    %end_frame    
-    btype       %= "dp" % double pendulum
-    %bnum
+    nTrials     = 5 % num of trials, dat is concat of nTrials
+    nSamps      = 200 % disc length of each trial 
     %% settings
-
-
-
-
     nx      = 2 % num of state variables 
     nu      = 2 % num of cont. inputs
     eps     = 1.0
@@ -39,16 +36,13 @@ classdef dp_simCls < matlab.System
     %nSamps
   end
   methods 
-    function obj = dp_simCls(varargin) 
+    function obj = dp_class(varargin) 
       setProperties(obj,nargin,varargin{:}) % init obj w name-value args
       obj.check_deps();
     end 
   end % methods 
   methods (Access = public) 
     
-
-% https://www.mathworks.com/help/mpc/ug/code-generation-with-simulink-coder.html
-
     function load_cfg(obj, cfg) 
       obj.toutDir     = cfg.toutDir;
       obj.simDir      = cfg.simDir;
