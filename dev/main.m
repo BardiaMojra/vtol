@@ -1,5 +1,8 @@
 %% koopman main
 % todo: 
+% - use 
+
+%
 % - impliment DP
 % - in code simScape
 % -- https://www.mathworks.com/help/mpc/ug/code-generation-with-simulink-coder.html 

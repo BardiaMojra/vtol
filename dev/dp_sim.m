@@ -103,6 +103,7 @@ classdef dp_sim < matlab.System
          open(simFile)
        end
        obj.sim = linearize(simFile);
+
     end 
 
   end % private methods

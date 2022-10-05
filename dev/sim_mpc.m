@@ -31,7 +31,7 @@ close all; clear; clc; addpath(genpath('./'));
 %plant = ss(tf([3 1],[1 0.6 1]));
 %plant = dp;
 sim = "dp"; 
-%open_system(sim);  % open dp in simScape 
+open_system(sim);  % open dp in simScape 
 
 opSpec = operspec(sim); 
 disp(opSpec);
