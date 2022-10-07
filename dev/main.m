@@ -23,7 +23,8 @@ cfg  = cfg_class(TID    = ['T000','000','_test_dp',''], ...
 dlgr  = dlgr_class(); dlgr.load_cfg(cfg);
 %% dat/sim
 %vp    = VanDerPol_class(); vp.load_cfg(cfg); %
-dp    = dp_sim(); dp.load_cfg(cfg);
+sp    = sp_class(); dp.load_cfg(cfg); %
+%dp    = dp_sim(); dp.load_cfg(cfg);
 %% init app modules
 kp    = koopman_class(); kp.load_cfg(cfg); % also loads dat 
 %% gen data 

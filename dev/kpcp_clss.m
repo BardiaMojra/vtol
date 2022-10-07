@@ -1,7 +1,7 @@
-classdef koopman_class < matlab.System 
+classdef kpcp_clss < matlab.System 
   properties
     %% class
-    cName       = "koopman" % 
+    cName       = "koopman cart-pole" % kpcp
     desc        = [""]
     credit      = ""
     %% cfg (argin)
@@ -16,12 +16,17 @@ classdef koopman_class < matlab.System
     nTrials
     sim
     %% koopman
-    nxObs = 4 % num of x observables  
-    nuObs = 1 % num of u observables 
+    x_o   = [1, 1] %sim.ransamp_x();
+    u_o   = [.1, .1] %u = sim.ransamp_u();
+    nxObs = 7 % num of x observables  
+    nuObs = 2 % num of u observables 
+    Q     = diag([1.0, 1.0, 0., 0.]) % note: no weights on lifted space dims
+    R     = diag([1.0])* 1e-2 
+    %
     nObs % num of x+u observables 
   end
   methods % constructor
-    function obj = koopman_class(varargin) 
+    function obj = kpcp_clss(varargin) 
       setProperties(obj,nargin,varargin{:}) % init obj w name-value args
     end 
   end % methods % constructor
@@ -30,15 +35,15 @@ classdef koopman_class < matlab.System
     function load_cfg(obj, cfg) 
       obj.toutDir     = cfg.toutDir;
       obj.dt          = cfg.sim.dt;  
-      %obj.nVars       = cfg.sim.nVars;  
-      %obj.nSamps      = cfg.sim.nSamps;       
-      %obj.st_frame    = cfg.sim.st_frame;   
-      %obj.end_frame   = cfg.sim.end_frame; 
       obj.nTrials     = cfg.sim.nTrials;
       obj.nSamps      = cfg.sim.nSamps;
       obj.sim         = cfg.sim;
+      %obj.Q           = cfg.sim.Q;
+      %obj.R           = cfg.sim.R;
+      %obj.get_z       = cfg.sim.get_z;
+
       obj.nObs        = obj.nxObs + obj.nuObs;
-      obj.init();
+      %obj.init();
       obj.get_model(cfg.sim);
     end
 
@@ -63,38 +68,38 @@ classdef koopman_class < matlab.System
           x  = xo; u  = uo; % propagate x n u
         end
       end
-      A  = A / M;
-      G  = G / M;
+      A       = A / M;
+      G       = G / M;
       m.ko    = A*pinv(G);
       m.cko   = logm(m.ko)/sim.dt;
       m.A     = m.cko(1:obj.nxObs,        1:obj.nxObs);
       m.B     = m.cko(1:obj.nxObs,obj.nxObs:end      );
     end % get_model()
 
-    function z = get_z(~,x,u) % this is the basis function 
-      z = [x(1), x(2), x(1)^2, (x(1)^2)*x(2), u(1)];
-    end % get_lifted_rep()
+    function z = get_z(~,x,u) % ----------------------------------->> basis func% move this to sim or dat class 
+    
+      z = [x(1), x(2), x(1)^2, (x(1)^2)*x(2), u(1)]; % Van Der Pol 
+    end % get_z()
 
-    function C = OuterProduct(~,A,B)  % version 5
+    function C = OuterProduct(~,A,B) % version 5
       C = A(:)*B(:).';
-      %C = reshape(A(:) * B(:).', [size(A), size(B)]);
     end
 
-    function m = get_optCont(~, m)
-      m.Q     = diag([1.0, 1.0, 0., 0.]); %% note: no weights on lifted space dims
-      m.R     = diag([1.0])* 1e-2;
+    function m = get_optCont(obj,m)
+      m.Q     = obj.Q;
+      m.R     = obj.R;
       m.P     = care(m.A, m.B, m.Q, m.R); % Ricatti solution 
       m.Klqr  = m.R\(m.B'*m.P);
     end % get_optCont()
   
     function trajectory = run_cont(obj,m,sim)
-      x = [1, 1];%sim.ransamp_x();
-      u = [.1, .1]; %u = sim.ransamp_u();
+      x = obj.x_o; %sim.ransamp_x();
+      u = obj.u_o; %u = sim.ransamp_u();
       ztar = obj.get_z(0.*x, u);
       ztar = ztar(1:obj.nxObs);
-      nt = 1000;%  simulation time
-      trajectory = zeros(nt, sim.nx*3);
-      for t = 1:nt
+      %nt = 1000;%  simulation time
+      trajectory = zeros(obj.nSamps, sim.nx*3);
+      for t = 1:obj.nSamps
         zest = obj.get_z(x,u);
         zest = zest(1:obj.nxObs);
         u = - m.Klqr * (ztar-zest)';
@@ -106,8 +111,8 @@ classdef koopman_class < matlab.System
 
   end 
   methods  (Access = private)
-    function init(obj)
-    end
+    %function init(obj)
+    %end
 
   end % private methods
 end
