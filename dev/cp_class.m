@@ -11,16 +11,16 @@ classdef cp_class < matlab.System
     %datDir            
     %st_frame      
     %end_frame    
-    btype       = "VanDerPol"
+    btype       = "cart-pole"
     %bnum
     %% settings
     nx      = 4 % num of state variables 
     nu      = 1 % num of cont. inputs
     eps     = 1.0
-    dt      = 0.01
-    stRange = 6
-    uRange  = 0.1
+    %dt      = 0.01 % todo: add assert for dt and hz
     hz      = 60.0
+    xband   = [6.24, 1.0, 2.0, 2.0] % x (state) var range 
+    uband   = [1.] % u (input) var range 
     sat     = 5.0
     %% opt
     x
@@ -43,12 +43,12 @@ classdef cp_class < matlab.System
     end
 
     function x = ransamp_x(obj) % reset st to rand IC
-      obj.x = -(obj.stRange/2) + obj.stRange*rand(obj.nx,1);
+      obj.x = -(obj.xband/2) + obj.xband*rand(obj.nx,1);
       x = obj.x;
     end 
 
     function u = ransamp_u(obj) % rand cont. input 
-      obj.u = -(obj.uRange/2) + obj.uRange*rand(obj.nx,1);
+      obj.u = -(obj.uband/2) + obj.uband*rand(obj.nx,1);
       u = obj.u;
     end 
 

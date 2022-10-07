@@ -34,7 +34,7 @@ kp    = koopman_class(); kp.load_cfg(cfg); % also loads dat
 %% run
 %gt_m    = model_class(mthd = "ground truth", rec = pi.dat); % gt
 
-vp_m = kp.get_model(vp); kp.get_optCont(vp_m);
+vp_m = kp.get_dat(vp); kp.get_optCont(vp_m);
 trj  = kp.run_cont(vp_m,vp);
 plot(trj);
 legend("on")
