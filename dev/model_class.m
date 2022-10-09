@@ -1,7 +1,9 @@
 classdef model_class < matlab.System
   properties
     %% class
-    cName       = "model"
+    cName       = "model_class"
+    desc        = "est explicit dynamic model and controls class "
+    credit      = "Bardia Mojra"
     note        = ["model class is used as a general class for system " ...
       "operations, i.e. plots and general data/output logging."]
     sav_mdl_en     = true
@@ -16,21 +18,17 @@ classdef model_class < matlab.System
     mthd    = [] % piDMD, HAVOK
     cons    = [] % e.g. orth
     label   = [] % show model cfg and is used in plots
-    A       = [] % state transient function pointer (per piDMD)
-    Aproj   = [] % A projection matrix
-    Atilde  = [] % A est matrix 
-    Asparse      % = sparse(Imat,Jmat,Rmat,nx,nx) - diag
+    %% models, projections, estimates, 
+    %A       % state transient function pointer (per piDMD)
+    Aproj   % A projection matrix
+    Atilde  % A est matrix 
+    Asparse % = sparse(Imat,Jmat,Rmat,nx,nx) - diag
     YF       % = eig(m.Yf);
-    A_eM    = [] % eigenFunc matrix
+    A_eM    % eigenFunc matrix
     eVals   = []
     eVecs   = []
     rec     = []
-    % inputs 
-    r % rank
-    d % band width of diag 
-    s % block size [2 3]
-    p % num elements in the block 
-    % koopman vars
+    %% koopman vars
     datA
     datG
     ko  
@@ -39,9 +37,14 @@ classdef model_class < matlab.System
     R     
     P     
     Klqr  
-    %A   
+    K
+    A   
     B   
-    % piDMD vars
+    %% piDMD vars
+    r % rank
+    d % band width of diag 
+    s % block size [2 3]
+    p % num elements in the block 
     U
     S
     V
@@ -65,8 +68,6 @@ classdef model_class < matlab.System
     L2
     MAE
     MSE
-
-
     % HAVOK
     B_frcin % HAVOK
   end

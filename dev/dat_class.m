@@ -1,7 +1,7 @@
 classdef dat_class < matlab.System 
   properties
     %% class
-    class       = 'dat'
+    class       = 'dat_class'
     note        = ''
     %% cfg (argin)
     toutDir         

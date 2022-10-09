@@ -1,8 +1,9 @@
 classdef piDMD_class < matlab.System 
   properties
     %% class
-    cName       = "piDMD" % Physics-informed dynamic mode decompositions
-    desc        = ["Computes a dynamic mode decomposition when the solution " ...
+    cName       = "piDMD_class" 
+    desc        = "Physics-informed dynamic mode decompositions"
+    note        = ["Computes a dynamic mode decomposition when the solution " ...
       "matrix is constrained to lie in a matrix manifold. The options " ...
       "availablefor the 'method' so far are listed are 'constrains' property."]
     credit      = ""

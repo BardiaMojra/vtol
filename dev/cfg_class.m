@@ -1,7 +1,7 @@
 classdef cfg_class < matlab.System 
   properties
     %% class
-    class       = 'cfg'
+    class       = 'cfg_class'
     note        = ''
     %% features
     sav_cfg_en  = true % sav cfg as txt file
@@ -17,7 +17,7 @@ classdef cfg_class < matlab.System
     % benchmark cfg  
     bmode       = "sim" % or "dat"
     btype       % usr input e.g. "dp"
-    btypes      = {"sp","dp","vtol"}
+    btypes      = ["vdp_emod","cp_emod","dp_sim","sp","vtol"]
     bnum        = nan % btype subset
     st_frame    = nan % start frame index
     end_frame   = nan % end frame index

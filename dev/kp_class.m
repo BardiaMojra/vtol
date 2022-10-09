@@ -1,8 +1,8 @@
-classdef kp_clss < matlab.System 
+classdef kp_class < matlab.System 
   properties
     %% class
-    cName       = "koopman" % kp
-    desc        = [""]
+    cName       = "kp_class" % kp
+    desc        = "Koopman operator controller class"
     credit      = ""
     %% cfg (argin)
     toutDir
@@ -22,7 +22,7 @@ classdef kp_clss < matlab.System
     nuObs = 2 % num of u observables 
     Q     = diag([1.0, 1.0, 0., 0.]) % note: no weights on lifted space dims
     R     = diag([1.0])* 1e-2 
-    %
+    % private
     nObs % num of x+u observables 
   end
   methods % constructor

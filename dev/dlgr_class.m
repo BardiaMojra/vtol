@@ -1,7 +1,7 @@
 classdef dlgr_class < matlab.System 
   properties
     %% class
-    class       = "dlgr"
+    class       = "dat_class"
     note        = "manages all data logs for uniform plotting and comparison."
     %% features
     %log_prt_en      = false

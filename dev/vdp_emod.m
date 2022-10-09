@@ -1,34 +1,39 @@
-classdef cp_class < matlab.System 
+classdef vdp_emod < matlab.System 
   properties
     %% class
-    cName       = "cp" % cart-pend
-    desc        = ["Cart Pendulum Model Class"]
+    cName       = "vdp_emod" 
+    desc        = "Van der Pol explicit model class" 
     credit      = ""
     %% cfg (argin)
     toutDir         
-    nTrials    
-    nSamps    
+    nTrials    % = cfg.sim.nTrials;
+    nSamps    %  = cfg.sim.nSamps;    
     %datDir            
     %st_frame      
     %end_frame    
-    btype       = "cart-pole"
+    btype       = "vdp_emod"
     %bnum
     %% settings
-    nx      = 4 % num of state variables 
-    nu      = 1 % num of cont. inputs
+    nx      = 2 % num of state variables 
+    nu      = 2 % num of cont. inputs
     eps     = 1.0
-    %dt      = 0.01 % todo: add assert for dt and hz
-    hz      = 60.0
-    xband   = [6.24, 1.0, 2.0, 2.0] % x (state) var range 
-    uband   = [1.] % u (input) var range 
-    sat     = 5.0
+    dt      = 0.01
+    stRange = 6
+    uRange = 0.1
     %% opt
     x
     u
     xdot
+    %f   % function 
+    %dfdx not vars, fpntr
+    %dfdu not vars, fpntr
+    %% 
+    %dat % dat 
+    %nVars % same as nx
+    %nSamps
   end
   methods 
-    function obj = cp_class(varargin) 
+    function obj = VanDerPol_class(varargin) 
       setProperties(obj,nargin,varargin{:}) % init obj w name-value args
     end 
   end % methods 
@@ -43,20 +48,19 @@ classdef cp_class < matlab.System
     end
 
     function x = ransamp_x(obj) % reset st to rand IC
-      obj.x = -(obj.xband/2) + obj.xband*rand(obj.nx,1);
+      obj.x = -(obj.stRange/2) + obj.stRange*rand(obj.nx,1);
       x = obj.x;
     end 
 
     function u = ransamp_u(obj) % rand cont. input 
-      obj.u = -(obj.uband/2) + obj.uband*rand(obj.nx,1);
+      obj.u = -(obj.uRange/2) + obj.uRange*rand(obj.nx,1);
       u = obj.u;
     end 
 
     function xdot = f(obj,x,u)
-      xdot = [ x(3), x(4), ...
-               9.81*sin(x(1))/1.0 + obj.sat*u(1)*cos(x(1))/1.0 - 0.2*x(3), ...
-               obj.sat*u(1) -0.1*x(4) ];
-      xdot = x + xdot/obj.hz;
+      xdot = [x(2);
+             -x(1) + obj.eps * (1-x(1)^2) * x(2)+u(1)];
+      obj.xdot = xdot;
     end 
 
     function [dfdx,dfdu] = get_linearization(obj,x,u)

@@ -2,8 +2,8 @@ classdef dp_sim < matlab.System
   properties
     %% class
     % @link https://www.mathworks.com/help/mpc/ug/code-generation-with-simulink-coder.html
-    cName       = "dp_class" % 
-    desc        = ["Double pendulum simulation class"]
+    cName       = "dp_sim" % 
+    desc        = ["Double pendulum SimScape simulation wrapper class"]
     %credit      = ""
     %% features 
     en_shw_sim  = true 
@@ -11,7 +11,7 @@ classdef dp_sim < matlab.System
     en_sav_sim
 
     %% cfg (argin)
-    btype       = "dp" % double pendulum
+    btype       = "dp_sim" % double pendulum
     %bnum    
     simDir
     toutDir 

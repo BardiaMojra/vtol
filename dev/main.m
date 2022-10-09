@@ -1,43 +1,38 @@
 %% koopman main
 % todo: 
-% - use 
-
-%
-% - impliment DP
-% - in code simScape
+% - impliment CP explicit mod
+% - gen data
+% - on hold: in code simScape
 % -- https://www.mathworks.com/help/mpc/ug/code-generation-with-simulink-coder.html 
+% https://www.mathworks.com/help/simulink/ug/using-the-sim-command.html#mw_630580a7-20cd-43f3-aa36-2b5b0064daf4
 % - port in DIP LQR controller and compare results
 %% init sys 
 
 %warning('off','all')
 close all; clear; clc; addpath(genpath('./'));
-%x_init = [1 1 1 1];
 
-
-cfg  = cfg_class(TID    = ['T000','000','_test_dp',''], ...
-                 brief  = ["."], ...
-                 btype  = "dp", ...
-                 bnum   = 1, ...
-                 nTrials=10, nSamps=200, ...
-                 end_frame  = 200);
+cfg  = cfg_class(TID    = ['T000','000',''], ...
+                 brief  = ("."), ...
+                 btype  = "cp_emod", ...
+                 nTrials=10, nSamps=200);
+%% util
 dlgr  = dlgr_class(); dlgr.load_cfg(cfg);
 %% dat/sim
 %vp    = VanDerPol_class(); vp.load_cfg(cfg); %
-sp    = sp_class(); dp.load_cfg(cfg); %
+cp    = cp_emod(); cp.load_cfg(cfg); % cart-pend
 %dp    = dp_sim(); dp.load_cfg(cfg);
 %% init app modules
-kp    = koopman_class(); kp.load_cfg(cfg); % also loads dat 
-%% gen data 
-% https://www.mathworks.com/help/simulink/ug/using-the-sim-command.html#mw_630580a7-20cd-43f3-aa36-2b5b0064daf4
-% 
+%kp    = koopman_class(); kp.load_cfg(cfg); 
+kpc    = kpcp_class(); kpc.load_cfg(cfg); 
 
 %% run
 %gt_m    = model_class(mthd = "ground truth", rec = pi.dat); % gt
 
-vp_m = kp.get_dat(vp); kp.get_optCont(vp_m);
-trj  = kp.run_cont(vp_m,vp);
+kpc_m = kpc.get_mod(cp); 
+%kp.get_optCont(vp_m);
+trj  = kpc.run_cont(vp_m,vp);
 plot(trj);
-legend("on")
+legend("cart","pend")
 %kp.Phi = kp.get_Phi_model();
 
 
