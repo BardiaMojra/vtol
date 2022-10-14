@@ -31,6 +31,7 @@ classdef model_class < matlab.System
     %% koopman vars
     datA
     datG
+    G
     ko  
     cko 
     Q     

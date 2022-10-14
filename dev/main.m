@@ -29,8 +29,10 @@ kpc    = kpcp_class(); kpc.load_cfg(cfg);
 %gt_m    = model_class(mthd = "ground truth", rec = pi.dat); % gt
 
 kpc_m = kpc.get_mod(cp); 
-%kp.get_optCont(vp_m);
-trj  = kpc.run_cont(vp_m,vp);
+xt = [3.14,0,0,0];
+nSamps = round(40* kpc.hz);
+u = zeros(nSamps,1);
+trj  = kpc.run_cont(cp,kpc_m,xt,u,nSamps); % sim,m,xt,u)
 plot(trj);
 legend("cart","pend")
 %kp.Phi = kp.get_Phi_model();

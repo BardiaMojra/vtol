@@ -47,7 +47,7 @@ classdef kpcp_class < matlab.System
       obj.sat         = cfg.sim.sat;
       obj.nObs        = obj.nxObs + obj.nuObs;
       %obj.init();
-      %obj.get_model(cfg.sim);
+      %obj.train(cfg.sim);
     end
 
 
@@ -59,11 +59,11 @@ classdef kpcp_class < matlab.System
       m.Klqr  = m.R\(m.B'*m.P);
     end % get_optCont()
 
-    function mod = get_mod(obj,sim)
+    function m = train(obj,sim)
       %if obj.en_log_train_dat
       %  train_log = obj.dlgr.new_log(name="training data");
       %end
-      mod = model_class(cons = "none", mthd = "koopman", label = "test");
+      m = model_class(cons = "none", mthd = "koopman", label = "test");
       A = zeros(obj.nObs); G = zeros(obj.nObs); cnt = 0;
       for k = 1:obj.nTrials % gen dat
         x = sim.ransamp_x();
@@ -86,15 +86,15 @@ classdef kpcp_class < matlab.System
       K = A * pinv(G);
       A = K(1:obj.nxObs,1:obj.nxObs);
       B = K(1:obj.nxObs,obj.nxObs:end);
-      mod.G = G;
-    end % get_mod()
+      m.G = G;
+    end % train()
 
     function C = OuterProduct(~,A,B) % version 5
       C = A(:)*B(:).';
     end
 
-    function u = update_u(obj,sim,xt,u,A,B)
-      T = int(1.5*obj.hz);
+    function u = update_u(obj,sim,m,xt,u)
+      T = round(1.5*obj.hz);
       zt = sim.get_z(xt);
       zot = [];
       for t = 1:T
@@ -119,7 +119,7 @@ classdef kpcp_class < matlab.System
     
     function traj = run_cont(obj,sim,m,xt,u)
       traj = xt; % out = cat(1,xt,u); 
-      for t = 1:int(40* obj.hz)
+      for t = 1:round(40*obj.hz)
         u(1:end-1) = u(2);
         u(end) = zeros(size(u(end))); %% ---  ??
         u = obj.update_u(xt,u,m.A,m.B);
