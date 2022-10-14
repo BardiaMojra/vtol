@@ -64,7 +64,7 @@ classdef kpcp_class < matlab.System
       %  train_log = obj.dlgr.new_log(name="training data");
       %end
       m = model_class(cons = "none", mthd = "koopman", label = "test");
-      A = zeros(obj.nObs); G = zeros(obj.nObs); cnt = 0;
+      m.Am = zeros(obj.nObs); m.Gm = zeros(obj.nObs); cnt = 0;
       for k = 1:obj.nTrials % gen dat
         x = sim.ransamp_x();
         %u = sim.ransamp_u(); % const input bias
@@ -73,20 +73,26 @@ classdef kpcp_class < matlab.System
           u = sim.ransamp_u();
           xo = sim.get_f(x,u);
           uo = u; % ?
+          %disp("xo"); disp(xo)
+          %disp("uo"); disp(uo)
           z1 = cat(2,sim.get_z(x),sim.get_v(x,u));
           z2 = cat(2,sim.get_z(xo),sim.get_v(xo,u));
-          A = A + obj.OuterProduct(z2,z1)/cnt;
-          G = G + obj.OuterProduct(z1,z1)/cnt;
+          %disp("z1"); disp(z1)
+          %disp("z2"); disp(z2)
+          cnt = cnt+1;
+          m.Am = m.Am + obj.OuterProduct(z2,z1)/cnt;
+          m.Gm = m.Gm + obj.OuterProduct(z1,z1)/cnt;
+          %disp("m.A"); disp(m.A)
+          %disp("m.G"); disp(m.G)
           %if obj.en_log_train_dat
           %  train_log(name="training data")
           %end
           x  = xo; u = uo;% ?    % propagate x n u
         end
       end
-      K = A * pinv(G);
-      A = K(1:obj.nxObs,1:obj.nxObs);
-      B = K(1:obj.nxObs,obj.nxObs:end);
-      m.G = G;
+      m.K = m.Am * pinv(m.Gm);
+      m.Ac = m.K(1:obj.nxObs,1:obj.nxObs);
+      m.Bc = m.K(1:obj.nxObs,obj.nxObs:end);
     end % train()
 
     function C = OuterProduct(~,A,B) % version 5
@@ -99,17 +105,27 @@ classdef kpcp_class < matlab.System
       zot = [];
       for t = 1:T
         zt = sim.get_z(zt(1:obj.nx));
-        zot.append(zt);
-        zt = dot(A,zt) + dot(B, sim.get_v(zt(1:obj.nx), u(t)));
+        disp("zt"); disp(zt);
+
+
+
+        
+        zot = cat(zot,zt);
+        zt = dot(m.Ac,zt) + dot(m.Bc, sim.get_v(zt(1:obj.nx), u(t)));
+        disp("zt"); disp(zt);
+        disp("zot"); disp(zot);
       end 
       rho = np.zeros(size(zt));
       for t = T:1
-        Bdz = dot(B, sim.get_dvdz(zot(t,1:obj.nx), u(t)));
-        rho = sim.get_ldx(zot(t)) + dot((A+Bdz)', rho);
+        Bdz = dot(m.Bc, sim.get_dvdz(zot(t,1:obj.nx), u(t)));
+        m.rho = sim.get_ldx(zot(t)) + dot((m.Ac+Bdz)', rho);
         Beff = dot(B, sim.get_dvdu(zot(t), u(t)));
         %u[t] = np.clip(-Rinv.dot(Beff.T.dot(rho)), -1., 1.)
         du = dot(Beff',rho) + 2.0 * dot(obj.R,u(t));
         u(t) = obj.clip(u(t)-0.1*du,-1,1);
+        disp("m.rho"); disp(m.rho);
+        disp("du"); disp(du);
+        disp("u(t)"); disp(u(t));
       end 
     end 
 
@@ -122,16 +138,19 @@ classdef kpcp_class < matlab.System
       for t = 1:round(40*obj.hz)
         u(1:end-1) = u(2);
         u(end) = zeros(size(u(end))); %% ---  ??
-        u = obj.update_u(xt,u,m.A,m.B);
+        u = obj.update_u(sim,m,xt,u);
         u1 = u(1);
+        disp("u"); dip(u);
+        disp("u1"); dip(u1);
         xtpo = sim.get_f(xt,u1);
+        disp("xtpo"); dip(xtpo);
         z1 = cat(sim.get_z(xt), sim.get_v(xt,u1));
         z2 = cat(sim.get_z(xtpo), sim.get_v(xtpo,u1));
-        m.A = m.A + obj.OuterProduct(z2,z1)/cnt;
-        m.G = m.G + obj.OuterProduct(z1,z1)/cnt;
-        m.K = m.A * pinv(m.G);
-        m.A = m.K(1:obj.nxObs,1:obj.nxObs);
-        m.B = m.K(1:obj.nxObs,obj.nxObs:end);
+        m.Am = m.Am + obj.OuterProduct(z2,z1)/cnt;
+        m.Gm = m.Gm + obj.OuterProduct(z1,z1)/cnt;
+        m.K = m.Ac * pinv(m.Gm);
+        m.Ac = m.Kc(1:obj.nxObs,1:obj.nxObs);
+        m.Bc = m.Kc(1:obj.nxObs,obj.nxObs:end);
         xt = xtpo;
         cat(2,traj,xt);
       end 

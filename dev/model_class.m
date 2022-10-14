@@ -28,19 +28,19 @@ classdef model_class < matlab.System
     eVals   = []
     eVecs   = []
     rec     = []
-    %% koopman vars
-    datA
-    datG
-    G
-    ko  
-    cko 
+    %% koopman w input vars
+    Am % A_model from training data
+    Gm % G_model from training data
+    Ac % A_control to control system at runtime and based on Am and Gm
+    Bc % B_control to control system at runtime and based on u
+    K % m.K = m.Am * pinv(m.Gm);
+    rho % 
     Q     
     R     
     P     
-    Klqr  
-    K
-    A   
-    B   
+    Klqr % koopman mpc
+    ko  
+    cko 
     %% piDMD vars
     r % rank
     d % band width of diag 
@@ -62,7 +62,6 @@ classdef model_class < matlab.System
     M
     N
     T % the block tridiagonal matrix
-
     % errs
     st_errs % state errors 
     L1

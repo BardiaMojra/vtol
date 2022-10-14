@@ -19,7 +19,7 @@ cfg  = cfg_class(TID    = ['T000','000',''], ...
 dlgr  = dlgr_class(); dlgr.load_cfg(cfg);
 %% dat/sim
 %vp    = VanDerPol_class(); vp.load_cfg(cfg); %
-cp    = cp_emod(); cp.load_cfg(cfg); % cart-pend
+cp_em    = cp_emod(); cp_em.load_cfg(cfg); % cart-pend
 %dp    = dp_sim(); dp.load_cfg(cfg);
 %% init app modules
 %kp    = koopman_class(); kp.load_cfg(cfg); 
@@ -28,11 +28,12 @@ kpc    = kpcp_class(); kpc.load_cfg(cfg);
 %% run
 %gt_m    = model_class(mthd = "ground truth", rec = pi.dat); % gt
 
-kpc_m = kpc.get_mod(cp); 
+kpc_dm = kpc.train(cp_em);  
+
 xt = [3.14,0,0,0];
 nSamps = round(40* kpc.hz);
 u = zeros(nSamps,1);
-trj  = kpc.run_cont(cp,kpc_m,xt,u,nSamps); % sim,m,xt,u)
+trj  = kpc.run_cont(cp_em,kpc_dm,xt,u); % sim,m,xt,u)
 plot(trj);
 legend("cart","pend")
 %kp.Phi = kp.get_Phi_model();
