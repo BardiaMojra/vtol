@@ -92,7 +92,7 @@ classdef kpcp_class < matlab.System
       end
       m.K = m.Am * pinv(m.Gm);
       m.Ac = m.K(1:obj.nxObs,1:obj.nxObs);
-      m.Bc = m.K(1:obj.nxObs,obj.nxObs:end);
+      m.Bc = m.K(1:obj.nxObs,obj.nxObs+1:end);
     end % train()
 
     function C = OuterProduct(~,A,B) % version 5
@@ -102,30 +102,27 @@ classdef kpcp_class < matlab.System
     function u = update_u(obj,sim,m,xt,u)
       T = round(1.5*obj.hz);
       zt = sim.get_z(xt);
-      zot = [];
+      zot = zeros(0,size(zt,2));
       for t = 1:T
         zt = sim.get_z(zt(1:obj.nx));
-        disp("zt"); disp(zt);
-
-
-
-        
-        zot = cat(zot,zt);
-        zt = dot(m.Ac,zt) + dot(m.Bc, sim.get_v(zt(1:obj.nx), u(t)));
-        disp("zt"); disp(zt);
-        disp("zot"); disp(zot);
+        zot(t,:) = zt(1,:);
+        %disp("Bc"); disp(m.Bc);
+        %disp("sim.get_v(zt(1:obj.nx),u(t))"); disp(sim.get_v(zt(1:obj.nx),u(t)));
+        zt = m.Ac*zt' + m.Bc *sim.get_v(zt(1:obj.nx),u(t))';
+        %disp("zt"); disp(zt);
+        %disp("zot"); disp(zot);
       end 
-      rho = np.zeros(size(zt));
+      m.rho = zeros(size(zt));
       for t = T:1
-        Bdz = dot(m.Bc, sim.get_dvdz(zot(t,1:obj.nx), u(t)));
-        m.rho = sim.get_ldx(zot(t)) + dot((m.Ac+Bdz)', rho);
-        Beff = dot(B, sim.get_dvdu(zot(t), u(t)));
-        %u[t] = np.clip(-Rinv.dot(Beff.T.dot(rho)), -1., 1.)
-        du = dot(Beff',rho) + 2.0 * dot(obj.R,u(t));
-        u(t) = obj.clip(u(t)-0.1*du,-1,1);
+
+        Bdz = m.Bc * sim.get_dvdz(zot(t,1:obj.nx), u(t));
+        disp("Bdz"); disp(Bdz);
+        m.rho = sim.get_ldx(zot(t)) + (m.Ac+Bdz)'*m.rho;
         disp("m.rho"); disp(m.rho);
-        disp("du"); disp(du);
-        disp("u(t)"); disp(u(t));
+        Beff = B * sim.get_dvdu(zot(t),u(t));
+        %u[t] = np.clip(-Rinv.dot(Beff.T.dot(m.rho)), -1., 1.)
+        du = Beff'*m.rho + 2.0 * (obj.R*u(t));
+        u(t) = obj.clip(u(t)-0.1*du,-1,1);
       end 
     end 
 
@@ -140,19 +137,24 @@ classdef kpcp_class < matlab.System
         u(end) = zeros(size(u(end))); %% ---  ??
         u = obj.update_u(sim,m,xt,u);
         u1 = u(1);
-        disp("u"); dip(u);
-        disp("u1"); dip(u1);
+        %disp("u"); disp(u);
+        %disp("u1"); disp(u1);
         xtpo = sim.get_f(xt,u1);
-        disp("xtpo"); dip(xtpo);
-        z1 = cat(sim.get_z(xt), sim.get_v(xt,u1));
-        z2 = cat(sim.get_z(xtpo), sim.get_v(xtpo,u1));
-        m.Am = m.Am + obj.OuterProduct(z2,z1)/cnt;
-        m.Gm = m.Gm + obj.OuterProduct(z1,z1)/cnt;
-        m.K = m.Ac * pinv(m.Gm);
-        m.Ac = m.Kc(1:obj.nxObs,1:obj.nxObs);
-        m.Bc = m.Kc(1:obj.nxObs,obj.nxObs:end);
+        
+        disp("xtpo"); disp(xtpo);
+        
+        
+        z1 = cat(2,sim.get_z(xt), sim.get_v(xt,u1));
+        z2 = cat(2,sim.get_z(xtpo), sim.get_v(xtpo,u1));
+        
+        m.Am = m.Am + obj.OuterProduct(z2,z1)/t;
+        m.Gm = m.Gm + obj.OuterProduct(z1,z1)/t;
+
+        m.K = m.Am * pinv(m.Gm);
+        m.Ac = m.K(1:obj.nxObs,1:obj.nxObs);
+        m.Bc = m.K(1:obj.nxObs,obj.nxObs:end);
         xt = xtpo;
-        cat(2,traj,xt);
+        cat(1,traj,xt);
       end 
     end 
       
