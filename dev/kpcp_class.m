@@ -150,7 +150,13 @@ classdef kpcp_class < matlab.System
       end 
       m.rho = zeros(size(z));
       for t = uHorzn:-1:1
+
+
+
         Bdz = m.Bc * sim.get_dvdz(zo(t,1:obj.nx), u(t));
+        
+        
+        
         m.rho = sim.get_ldz(zo(t)) + (m.Ac+Bdz)'*m.rho;
         Beff = B * sim.get_dvdu(zo(t),u(t));
         %u[t] = np.clip(-Rinv.dot(Beff.T.dot(m.rho)), -1., 1.)
