@@ -100,6 +100,10 @@ classdef dlgr_class < matlab.System
       %obj.dat               = cfg.dat;
       obj.init();
     end
+function new_log(obj,name) % to log table 
+      obj.logs = size(obj.logs,1);
+      obj.logs
+    end 
 
     function add_mdl(obj, mdl) % to log table 
       len = size(obj.logs,1);

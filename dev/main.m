@@ -28,12 +28,16 @@ kpc    = kpcp_class(); kpc.load_cfg(cfg);
 %% run
 %gt_m    = model_class(mthd = "ground truth", rec = pi.dat); % gt
 
-kpc_dm = kpc.train(cp_em);  
+kpc_m = kpc.train(cp_em);  
 
-xt = [3.14,0,0,0];
-nSamps = round(40* kpc.hz);
+kpc.plt_train_XU(kpc_m); 
+kpc.plt_train_Z1(kpc_m); 
+kpc.plt_train_Z2(kpc_m); 
+
+x = [3.14,0,0,0];
+nSamps = 200;
 u = zeros(nSamps,1);
-trj  = kpc.run_cont(cp_em,kpc_dm,xt,u); % sim,m,xt,u)
+runLog  = kpc.run_cont(cp_em,kpc_m,x,u,nSamps); % sim,m,xt,u)
 plot(trj);
 legend("cart","pend")
 %kp.Phi = kp.get_Phi_model();

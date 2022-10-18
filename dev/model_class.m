@@ -6,8 +6,9 @@ classdef model_class < matlab.System
     credit      = "Bardia Mojra"
     note        = ["model class is used as a general class for system " ...
       "operations, i.e. plots and general data/output logging."]
-    sav_mdl_en     = true
-    shw_mdl_en     = true
+    sav_mdl_en           = true
+    shw_mdl_en           = true
+
     %sliding_ref_en  % cfg argin
     %% cfg (argin)
     TID     
@@ -41,6 +42,13 @@ classdef model_class < matlab.System
     Klqr % koopman mpc
     ko  
     cko 
+    % hist
+    x_hist
+    u_hist
+    z1_hist
+    z2_hist
+    
+
     %% piDMD vars
     r % rank
     d % band width of diag 
@@ -70,6 +78,7 @@ classdef model_class < matlab.System
     MSE
     % HAVOK
     B_frcin % HAVOK
+
   end
   methods  % constructor
     function obj = model_class(varargin) % init obj w name-value args
@@ -81,6 +90,9 @@ classdef model_class < matlab.System
       obj.name = strcat(obj.mthd," ",obj.cons," ",obj.label," ");
     end
   
+    
+
+
     function get_eigModel(obj)
       if strcmp("piDMD",obj.mthd)
         if strcmp(obj.cons,'exact') || strcmp(obj.cons,'exactSVDS')
