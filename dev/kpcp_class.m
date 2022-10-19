@@ -182,19 +182,20 @@ classdef kpcp_class < matlab.System
 
         xp = sim.get_f(x,u1);
         
-        z1x = sim.get_z(x);
-        vxu = sim.get_v(x,u1);
-        z2xp = sim.get_z(xp);
-        vxpu = sim.get_v(xp,u1);
-        z1 = cat(1,z1x,vxu);
-        z2 = cat(1,z2xp,vxpu);
+
+        z1x   = sim.get_z(x);
+        vxu   = sim.get_v(x,u1);
+        z2xp  = sim.get_z(xp);
+        vxpu  = sim.get_v(xp,u1);
+        z1    = cat(1,z1x,vxu);
+        z2    = cat(1,z2xp,vxpu);
 
         
-        m.Am = m.Am + obj.OuterProduct(z2,z1)/t;
-        m.Gm = m.Gm + obj.OuterProduct(z1,z1)/t;
-        m.K = m.Am/m.Gm;
-        m.Ac = m.K(1:obj.nz,1:obj.nz);
-        m.Bc = m.K(1:obj.nz,obj.nz:end);  
+        m.Am  = m.Am + obj.OuterProduct(z2,z1)/t;
+        m.Gm  = m.Gm + obj.OuterProduct(z1,z1)/t;
+        m.K   = m.Am/m.Gm;
+        m.Ac  = m.K(1:obj.nz,1:obj.nz);
+        m.Bc  = m.K(1:obj.nz,obj.nz:end);  
         
 
         disp("x"); disp(x);        
