@@ -7,7 +7,6 @@ classdef kpcp_class < matlab.System
     plt_train_sav_en     = true % sav dat n fig
     plt_train_shw_en     = false 
     %% koopman
-
     %% cfg (argin)
     toutDir
     dat 
@@ -131,46 +130,45 @@ classdef kpcp_class < matlab.System
     function u = update_u(obj,sim,m,x,u)
       uHorzn = round(1.5*obj.hz); % move to properties 
       z = sim.get_z(x);
-      zo = zeros(uHorzn,size(z,2));
+      zo = zeros(uHorzn,size(z,1));
       %disp("z (7,1)"); disp(z);
       %disp("zo (7,1)"); disp(zo);
       for t = 1:uHorzn
         z = sim.get_z(z(1:obj.nx));
-        zo(t,:) = z(1,:);
+        zo(t,:) = z';
         aa = m.Ac*z;
         vv = sim.get_v(z(1:obj.nx),u(t));
-        bb = m.Bc *vv;
+        bb = m.Bc * vv;
         z =  aa + bb;
-        disp("Bc (7,2)"); disp(m.Bc); 
-        disp("Ac (7,7)"); disp(m.Ac); 
-        disp("vv (2,1)"); disp(vv); 
-        disp("aa (7,1)"); disp(aa);
-        disp("bb (7,1)"); disp(bb);
-        disp("z (7,1)"); disp(bb);
+        %disp("Bc (7,2)"); disp(m.Bc); 
+        %disp("Ac (7,7)"); disp(m.Ac); 
+        %disp("vv (2,1)"); disp(vv); 
+        %disp("aa (7,1)"); disp(aa);
+        %disp("bb (7,1)"); disp(bb);
+        %disp("z (7,1)"); disp(bb);
       end 
       m.rho = zeros(size(z));
       for t = uHorzn:-1:1
-
-
-
-        Bdz = m.Bc * sim.get_dvdz(zo(t,1:obj.nx), u(t));
-        
-        
-        
-        m.rho = sim.get_ldz(zo(t)) + (m.Ac+Bdz)'*m.rho;
-        Beff = B * sim.get_dvdu(zo(t),u(t));
+        %disp("zo (90,z)"); disp(zo);
+        zzoo = zo(t,1:obj.nx);
+        %disp("zzoo (4,1)"); disp(zzoo);
+        dvdzoo = sim.get_dvdz(zzoo,u(t));
+        %disp("dvdzoo (2,7)"); disp(dvdzoo);
+        Bdz = m.Bc * dvdzoo;
+        %disp("Bdz (7,7)"); disp(Bdz);
+        m.rho = sim.get_ldz(zo(t,:)') + (m.Ac+Bdz)'*m.rho;
+        %disp("m.rho (7,1)"); disp(m.rho);
+        Beff = m.Bc * sim.get_dvdu(zo(t,:),u(t));
+        %disp("Beff (7,1)"); disp(Beff);
         %u[t] = np.clip(-Rinv.dot(Beff.T.dot(m.rho)), -1., 1.)
         du = Beff'*m.rho + 2.0 * (obj.R*u(t));
         u(t) = obj.clip(u(t)-0.1*du,-1,1);
-        disp("Bdz"); disp(Bdz);
-        disp("m.rho"); disp(m.rho);
-        disp("Beff"); disp(Beff);
-        disp("du"); disp(du);
-        disp("u(t)"); disp(u(t) );
+        %disp("du (1,1)"); disp(du);
+        %disp("u(t) (1,1)"); disp(u(t) );
       end 
     end  % update_u() 
 
-    function a = clip(a,amin,amax) % clip arr
+    function a = clip(~,a,amin,amax) % clip arr
       a = min(a,amax); a = max(a,amin); 
     end
     

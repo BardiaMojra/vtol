@@ -30,9 +30,9 @@ kpc    = kpcp_class(); kpc.load_cfg(cfg);
 
 kpc_m = kpc.train(cp_em);  
 
-kpc.plt_train_XU(kpc_m); 
-kpc.plt_train_Z1(kpc_m); 
-kpc.plt_train_Z2(kpc_m); 
+%kpc.plt_train_XU(kpc_m); 
+%kpc.plt_train_Z1(kpc_m); 
+%kpc.plt_train_Z2(kpc_m); 
 
 x = [3.14,0,0,0];
 nSamps = 200;
