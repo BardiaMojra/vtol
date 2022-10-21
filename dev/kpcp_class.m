@@ -136,35 +136,35 @@ classdef kpcp_class < matlab.System
       for t = 1:uHorzn
         z = sim.get_z(z(1:obj.nx));
         zo(t,:) = z';
-        aa = m.Ac*z;
-        vv = sim.get_v(z(1:obj.nx),u(t));
-        bb = m.Bc * vv;
-        z =  aa + bb;
+        %aa = m.Ac*z;
+        %vv = sim.get_v(z(1:obj.nx),u(t));
+        %bb = m.Bc * sim.get_v(z(1:obj.nx),u(t));
+        z =  m.Ac*z + (m.Bc * sim.get_v(z(1:obj.nx),u(t)));
         %disp("Bc (7,2)"); disp(m.Bc); 
         %disp("Ac (7,7)"); disp(m.Ac); 
-        %disp("vv (2,1)"); disp(vv); 
-        %disp("aa (7,1)"); disp(aa);
-        %disp("bb (7,1)"); disp(bb);
-        %disp("z (7,1)"); disp(bb);
+%         disp("vv (2,1)"); disp(vv); 
+%         disp("aa (7,1)"); disp(aa);
+%         disp("bb (7,1)"); disp(bb);
+%         disp("z (7,1)"); disp(bb);
       end 
       m.rho = zeros(size(z));
       for t = uHorzn:-1:1
-        %disp("zo (90,z)"); disp(zo);
-        zzoo = zo(t,1:obj.nx);
+%         disp("zo (90,z)"); disp(zo);
+        %zzoo = zo(t,1:obj.nx);
         %disp("zzoo (4,1)"); disp(zzoo);
-        dvdzoo = sim.get_dvdz(zzoo,u(t));
-        %disp("dvdzoo (2,7)"); disp(dvdzoo);
-        Bdz = m.Bc * dvdzoo;
-        %disp("Bdz (7,7)"); disp(Bdz);
+        %dvdzoo = sim.get_dvdz(zo(t,1:obj.nx),u(t));
+%         disp("dvdzoo (2,7)"); disp(dvdzoo);
+        Bdz = m.Bc * sim.get_dvdz(zo(t,1:obj.nx),u(t));
+%         disp("Bdz (7,7)"); disp(Bdz);
         m.rho = sim.get_ldz(zo(t,:)') + (m.Ac+Bdz)'*m.rho;
-        %disp("m.rho (7,1)"); disp(m.rho);
+%         disp("m.rho (7,1)"); disp(m.rho);
         Beff = m.Bc * sim.get_dvdu(zo(t,:),u(t));
-        %disp("Beff (7,1)"); disp(Beff);
-        %u[t] = np.clip(-Rinv.dot(Beff.T.dot(m.rho)), -1., 1.)
+%         disp("Beff (7,1)"); disp(Beff);
+        %u[t] = np.clip(-Rinv.dot(Beff.T.dot(m.rho)), -1., 1.);
         du = Beff'*m.rho + 2.0 * (obj.R*u(t));
         u(t) = obj.clip(u(t)-0.1*du,-1,1);
-        %disp("du (1,1)"); disp(du);
-        %disp("u(t) (1,1)"); disp(u(t) );
+%         disp("du (1,1)"); disp(du);
+%         disp("u(t) (1,1)"); disp(u(t) );
       end 
     end  % update_u() 
 
@@ -173,7 +173,7 @@ classdef kpcp_class < matlab.System
     end
     
     function traj = run_cont(obj,sim,m,x,u,nSamps)
-      traj = x; % out = cat(1,xt,u); 
+      traj = zeros(nSamps, size(x,2)); % out = cat(1,xt,u); 
       for t = 1:nSamps
         u(1:end-1) = u(2);
         u(end) = zeros(size(u(end))); %% ---  ??
@@ -195,25 +195,25 @@ classdef kpcp_class < matlab.System
         m.Gm  = m.Gm + obj.OuterProduct(z1,z1)/t;
         m.K   = m.Am/m.Gm;
         m.Ac  = m.K(1:obj.nz,1:obj.nz);
-        m.Bc  = m.K(1:obj.nz,obj.nz:end);  
-        
-
-        disp("x"); disp(x);        
-        disp("xp"); disp(xp);
-        disp("z1x"); disp(z1x);
-        disp("vxu"); disp(vxu);
-        disp("z1"); disp(z1);
-        disp("z2xp"); disp(z2xp);
-        disp("vxpu"); disp(vxpu);
-        disp("z2"); disp(z2);
-        disp("cnt"); disp(t);
-        disp("m.Am"); disp(m.Am);
-        disp("m.Gm"); disp(m.Gm);
-        disp("m.K "); disp(m.K );
-        disp("m.Ac"); disp(m.Ac);
-        disp("m.Bc"); disp(m.Bc);
+        m.Bc  = m.K(1:obj.nz,obj.nz+1:end);  
         x = xp;
-        cat(1,traj,x);
+        traj(t,:) = x;
+
+%         disp("x"); disp(x);        
+%         disp("xp"); disp(xp);
+%         disp("z1x"); disp(z1x);
+%         disp("vxu"); disp(vxu);
+%         disp("z1"); disp(z1);
+%         disp("z2xp"); disp(z2xp);
+%         disp("vxpu"); disp(vxpu);
+%         disp("z2"); disp(z2);
+%         disp("cnt"); disp(t);
+%         disp("m.Am"); disp(m.Am);
+%         disp("m.Gm"); disp(m.Gm);
+%         disp("m.K "); disp(m.K );
+%         disp("m.Ac"); disp(m.Ac);
+%         disp("m.Bc"); disp(m.Bc);
+
       end 
     end % run_cont()
 

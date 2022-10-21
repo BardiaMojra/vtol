@@ -35,11 +35,11 @@ kpc_m = kpc.train(cp_em);
 %kpc.plt_train_Z2(kpc_m); 
 
 x = [3.14,0,0,0];
-nSamps = 200;
+nSamps = 500;
 u = zeros(nSamps,1);
-runLog  = kpc.run_cont(cp_em,kpc_m,x,u,nSamps); % sim,m,xt,u)
-plot(trj);
-legend("cart","pend")
+traj  = kpc.run_cont(cp_em,kpc_m,x,u,nSamps); % sim,m,xt,u)
+plot(traj);
+%legend("cart","pend")
 %kp.Phi = kp.get_Phi_model();
 
 
