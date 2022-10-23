@@ -24,11 +24,11 @@ classdef cp_emod < matlab.System
     xband   = [6.24, 1.0, 2.0, 2.0] % x (state) var range 
     uband   = [1.] % u (input) var range 
     sat     = 5.0
-    xi   = [3.14, 0., 0., 0.] %sim.ransamp_x();
-    ui   = [.1, .1] %u = sim.ransamp_u();
-    Q     = diag([10, .2, 0, 0.05, 0, 0, 0])
-    Qf    = diag([20., 0.2, 0., 0., 0., 0.,0.])
-    R     = diag([0.01])
+    xi      = [3.14, 0., 0., 0.] %sim.ransamp_x();
+    ui      = [.1, .1] %u = sim.ransamp_u();
+    Q       = diag([10, .2, 0, 0.05, 0, 0, 0])
+    Qf      = diag([20., 0.2, 0., 0., 0., 0.,0.])
+    R       = diag([0.01])
     %% opt
     x
     u

@@ -11,8 +11,9 @@
 %warning('off','all')
 close all; clear; clc; addpath(genpath('./'));
 
-cfg  = cfg_class(TID    = ['T000','000',''], ...
-                 brief  = ("."), ...
+cfg  = cfg_class(TID    = ['T000','000','5'], ...
+                 brief  = ("Test run nSamps = 2000. We are interested in " + ...
+                 "steady state response."), ...
                  btype  = "cp_emod", ...
                  nTrials=10, nSamps=200);
 %% util
@@ -30,15 +31,17 @@ kpc    = kpcp_class(); kpc.load_cfg(cfg);
 
 kpc_m = kpc.train(cp_em);  
 
-%kpc.plt_train_XU(kpc_m); 
-%kpc.plt_train_Z1(kpc_m); 
-%kpc.plt_train_Z2(kpc_m); 
+kpc.plt_train_XU(kpc_m); 
+kpc.plt_train_Z1(kpc_m); 
+kpc.plt_train_Z2(kpc_m); 
 
 x = [3.14,0,0,0];
-nSamps = 500;
+nSamps = 2000;
 u = zeros(nSamps,1);
-traj  = kpc.run_cont(cp_em,kpc_m,x,u,nSamps); % sim,m,xt,u)
-plot(traj);
+kpc_m  = kpc.run_cont(cp_em,kpc_m,x,u,nSamps); % sim,m,xt,u)
+kpc.plt_run_XU(kpc_m); 
+kpc.plt_run_Z1(kpc_m); 
+kpc.plt_run_Z2(kpc_m); 
 %legend("cart","pend")
 %kp.Phi = kp.get_Phi_model();
 
@@ -47,11 +50,11 @@ plot(traj);
 
 %% results
 %dlgr.add_mdl(gt_m);
-dlgr.add_mdl(kp_m); % 
+%dlgr.add_mdl(kp_m); % 
 
 %% post processing 
-dlgr.get_errs(); 
-dlgr.get_tab(); % get res table
+%dlgr.get_errs(); 
+%dlgr.get_tab(); % get res table
 %dlgr.plt_recons_grid();
 %dlgr.plt_A_roots(); % overlay in one fig
 %dlgr.plt_A_roots_sep(); % separate figs 

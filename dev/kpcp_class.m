@@ -5,7 +5,7 @@ classdef kpcp_class < matlab.System
     desc        = "koopman cart-pendulum input controller class"
     credit      = ""
     plt_train_sav_en     = true % sav dat n fig
-    plt_train_shw_en     = false 
+    plt_train_shw_en     = true 
     %% koopman
     %% cfg (argin)
     toutDir
@@ -85,7 +85,7 @@ classdef kpcp_class < matlab.System
 
 
     %% gen funcs   
-    function m = get_optCont(obj,m)
+    function m = get_optCont(obj,m) % not used 
       m.Q     = obj.Q;
       m.R     = obj.R;
       m.P     = care(m.A, m.B, m.Q, m.R); % Ricatti solution 
@@ -172,50 +172,83 @@ classdef kpcp_class < matlab.System
       a = min(a,amax); a = max(a,amin); 
     end
     
-    function traj = run_cont(obj,sim,m,x,u,nSamps)
-      traj = zeros(nSamps, size(x,2)); % out = cat(1,xt,u); 
+    function m = run_cont(obj,sim,m,x,u,nSamps)
+      m.x_hist  = zeros(nSamps,obj.nx);
+      m.u_hist  = zeros(nSamps,obj.nu);
+      m.z1_hist = zeros(nSamps,obj.nzv);
+      m.z2_hist = zeros(nSamps,obj.nzv);
       for t = 1:nSamps
         u(1:end-1) = u(2);
         u(end) = zeros(size(u(end))); %% ---  ??
         u = obj.update_u(sim,m,x,u);
         u1 = u(1);
-
         xp = sim.get_f(x,u1);
-        
-
         z1x   = sim.get_z(x);
         vxu   = sim.get_v(x,u1);
         z2xp  = sim.get_z(xp);
         vxpu  = sim.get_v(xp,u1);
         z1    = cat(1,z1x,vxu);
-        z2    = cat(1,z2xp,vxpu);
-
-        
+        z2    = cat(1,z2xp,vxpu);       
         m.Am  = m.Am + obj.OuterProduct(z2,z1)/t;
         m.Gm  = m.Gm + obj.OuterProduct(z1,z1)/t;
         m.K   = m.Am/m.Gm;
         m.Ac  = m.K(1:obj.nz,1:obj.nz);
         m.Bc  = m.K(1:obj.nz,obj.nz+1:end);  
         x = xp;
-        traj(t,:) = x;
-
-%         disp("x"); disp(x);        
-%         disp("xp"); disp(xp);
-%         disp("z1x"); disp(z1x);
-%         disp("vxu"); disp(vxu);
-%         disp("z1"); disp(z1);
-%         disp("z2xp"); disp(z2xp);
-%         disp("vxpu"); disp(vxpu);
-%         disp("z2"); disp(z2);
-%         disp("cnt"); disp(t);
-%         disp("m.Am"); disp(m.Am);
-%         disp("m.Gm"); disp(m.Gm);
-%         disp("m.K "); disp(m.K );
-%         disp("m.Ac"); disp(m.Ac);
-%         disp("m.Bc"); disp(m.Bc);
-
+        m.x_hist(t,:) = x;
+        m.u_hist(t,:) = u1;
+        m.z1_hist(t,:) = z1;
+        m.z2_hist(t,:) = z2;
+        %disp("x"); disp(x);        
+        %disp("xp"); disp(xp);
+        %disp("z1x"); disp(z1x);
+        %disp("vxu"); disp(vxu);
+        %disp("z1"); disp(z1);
+        %disp("z2xp"); disp(z2xp);
+        %disp("vxpu"); disp(vxpu);
+        %disp("z2"); disp(z2);
+        %disp("cnt"); disp(t);
+        %disp("m.Am"); disp(m.Am);
+        %disp("m.Gm"); disp(m.Gm);
+        %disp("m.K "); disp(m.K );
+        %disp("m.Ac"); disp(m.Ac);
+        %disp("m.Bc"); disp(m.Bc);
       end 
     end % run_cont()
+
+    function plt_run_Z2(obj, m)
+      figTitle = "Test Run Data: Lifted State Posterior $Z_{post}$ and Lifted Control Input $U$";
+      fileName = "plt_run_Z2";
+      varNames = ["$z_{1}= \theta$","$z_{2}=x$","$z_{3}=\dot{\theta}$",...
+        "$z_{4}=\dot{x}$", "$z_{5}=sin(\theta)$","$z_{6}=cos(\theta)$","$z_{7}=1$", ...
+        "$v_{1}=u_{1}$", "$v_{2}=cos(\theta)*u_{1}$"];
+      data = m.z2_hist; 
+      assert(isequal(size(data,2), length(varNames)), ...
+        "[kpcp.plt_run_Z2()]->> varNames label and data lengths do not match...\n\n")
+      obj.plt_dat(figTitle,fileName,varNames,data);
+    end % plt_run_Z2()
+
+    function plt_run_Z1(obj, m)
+      figTitle = "Test Run Data: Lifted State Prior $Z_{prior}$ and Lifted Control Input $U$";
+      fileName = "plt_run_Z1";
+      varNames = ["$z_{1} = \theta$","$z_{2}= x$","$z_{3}= \dot{\theta}$",...
+        "$z_{4}= \dot{x}$", "$z_{5}=sin(\theta)$","$z_{6}=cos(\theta)$","$z_{7}=1$", ...
+        "$v_{1}= u_{1}$", "$v_{2}=cos( \theta)*u_{1}$"];
+      data = m.z1_hist; 
+      assert(isequal(size(data,2), length(varNames)), ...
+        "[kpcp.plt_run_Z1()]->> varNames label and data lengths do not match...\n\n")
+      obj.plt_dat(figTitle,fileName,varNames,data);
+    end % plt_run_Z1()
+
+    function plt_run_XU(obj, m)
+      figTitle = "Test Run Data: State & Control Input";
+      fileName = "plt_run_XU";
+      varNames = ["$\theta$","$x$","$\dot{\theta}$","$\dot{x}$","$u$"];
+      data = cat(2,m.x_hist,m.u_hist);
+      assert(isequal(size(data,2), length(varNames)), ...
+        "[kpcp.plt_run_XU()]->> varNames label and data lengths do not match...\n\n")
+      obj.plt_dat(figTitle,fileName,varNames,data);
+    end % plt_run_XU()
 
     function plt_train_Z2(obj, m)
       figTitle = "Training Data: Lifted State Posterior $Z_{post}$ and Lifted Control Input $U$";
@@ -263,10 +296,12 @@ classdef kpcp_class < matlab.System
       for v = 1:nVars
         plot(t,dat(:,v),Cr,obj.fig_Cr(v),LW,obj.fig_LW,LS,obj.fig_LS(v));
       end
+      grid("on");
       lg          = legend(varNames,IN,LT); 
       lg.Units    = obj.fig_leg_U;
       lg.Position = obj.fig_leg_pos;
       lg.FontSize = obj.fig_leg_FS;
+      axis padded
       if obj.plt_train_sav_en
         figname = strcat(obj.toutDir,fileName);
         saveas(fig, figname); % sav as fig file
