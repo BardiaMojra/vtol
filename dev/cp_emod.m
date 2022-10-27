@@ -22,13 +22,13 @@ classdef cp_emod < matlab.System
     %dt      = 0.01 % todo: add assert for dt and hz
     hz      = 60.0
     xband   = [6.24, 1.0, 2.0, 2.0] % x (state) var range 
-    uband   = [1.] % u (input) var range 
+    uband   = [1] % u (input) var range 
     sat     = 5.0
     xi      = [3.14, 0., 0., 0.] %sim.ransamp_x();
     ui      = [.1, .1] %u = sim.ransamp_u();
-    Q       = diag([10, .2, 0, 0.05, 0, 0, 0])
+    Q       = diag([20, .2, 0, 0.05, 0, 0, 0])
     Qf      = diag([20., 0.2, 0., 0., 0., 0.,0.])
-    R       = diag([0.01])
+    R       = diag([0.001])
     %% opt
     x
     u

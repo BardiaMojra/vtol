@@ -26,7 +26,7 @@ cp_em    = cp_emod(); cp_em.load_cfg(cfg); % cart-pend
 %kp    = koopman_class(); kp.load_cfg(cfg); 
 kpc    = kpcp_class(); kpc.load_cfg(cfg); 
 
-%% run
+%% train
 %gt_m    = model_class(mthd = "ground truth", rec = pi.dat); % gt
 
 kpc_m = kpc.train(cp_em);  
@@ -35,7 +35,8 @@ kpc.plt_train_XU(kpc_m);
 kpc.plt_train_Z1(kpc_m); 
 kpc.plt_train_Z2(kpc_m); 
 
-x = [3.14,0,0,0];
+x = [1,0,0,0];
+%x = [0,0,0,0];
 nSamps = 2000;
 u = zeros(nSamps,1);
 kpc_m  = kpc.run_cont(cp_em,kpc_m,x,u,nSamps); % sim,m,xt,u)
